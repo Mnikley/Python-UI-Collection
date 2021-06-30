@@ -1,0 +1,25 @@
+<Tooltip>:
+    size_hint: None, None
+    size: self.texture_size[0]+5, self.texture_size[1]+5
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<Root>:
+    orientation: 'vertical'
+	TTLabel:
+		text: "Im a label"
+		tooltip: "And im your tooltip"
+	TTLabel:
+		text: "Im just an ordinary label"
+	TTButton:
+		text: "Im a button"
+		on_release: root.test_function()
+		tooltip: "Click it for some action"
+	TTSlider:
+		tooltip: "Current value: " + str(round(self.value, 2))
+	TTSwitch:
+		tooltip: ["Switch is off", "Switch is on"][self.active]

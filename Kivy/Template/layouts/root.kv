@@ -1,0 +1,124 @@
+#############################################################################
+################################ START OF GUI ###############################
+#############################################################################
+
+<Root>:
+    orientation: 'vertical'
+    #canvas: # this would be a background across the whole GUI
+
+    canvas.before:
+        # Color:
+        #     rgba: (0, 0, 0, 1) if bool(int(app.config["layout"]["dark_mode"])) else (1, 1, 1, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: app.config["images"]["bg_dark"] if bool(int(app.config["layout"]["dark_mode"])) else app.config["images"]["bg_bright"]
+    #############################################################################
+    ################################# TOP MENU ##################################
+    #############################################################################
+    BoxLayout:
+        size_hint_y: 0.25
+        canvas:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: app.config["images"]["bar_dark"] if bool(int(app.config["layout"]["dark_mode"])) else app.config["images"]["bar_bright"]
+
+        Image:
+            source: app.config["images"]["logo_bright"] if bool(int(app.config["layout"]["dark_mode"])) else app.config["images"]["logo_dark"]
+        BoxLayout:
+            padding: dp(10)
+            orientation: "horizontal"
+            TTButton:
+                text: "Login Screen"
+                on_release:
+                    root.sm_switcher("screen_login")
+            TTButton:
+                text: "Debug Screen"
+                on_release:
+                    root.sm_switcher("screen_debug")
+            TTButton:
+                text: "Restart"
+                on_release:
+                    app.restart()
+    HLine:
+    #############################################################################
+    ########################### MAIN SCREEN MANAGER #############################
+    #############################################################################
+    ScreenManager:
+        id: sm
+
+
+    ########################### LOGIN / INFO SCREEN #############################
+        Screen:
+            padding: dp(10)
+            name: 'screen_login'
+            id: 'screen_login'
+            BoxLayout:
+                padding: dp(10)
+                TTLabel:
+                    text: 'Welcome to my demo app!'
+                TTSlider:
+                    tooltip: "Current value: " + str(round(self.value, 2))
+                TTSwitch:
+                    tooltip: ["Switch is off", "Switch is on"][self.active]
+    ########################### DEBUG / TEST SCREEN #############################
+        Screen:
+            name: 'screen_debug'
+            id: 'screen_debug'
+            BoxLayout:
+                padding: dp(10)
+                orientation: 'vertical'
+                BoxLayout:
+                    orientation: 'horizontal'
+                    TTButton:
+                        text: "Test button with much more text"
+                        on_release: root.test_function()
+                        tooltip: "WOW!"
+                    TTLabel:
+                        text: "Test label ith much text"
+                        tooltip: "Also WOW!"
+                TTLabel:
+                    text: "TEST"
+                    tooltip: "mkay"
+                TTLabelH1:
+                    text: "This is a H1 test"
+                    tooltip: "great header m8"
+                TTLabelH2:
+                    text: "This is a H2 test"
+                    tooltip: "another great header m8"
+                TTLabelH1:
+                    text: "This H1 is different: [size=20]Is [i]this[/i] [b]Barlow[/b] [color=ff3333]or[/color] [b][i]what[/b][/i][/size]?"
+    HLine:
+    #############################################################################
+    ############################### BOTTOM MENU #################################
+    #############################################################################
+    BoxLayout:
+        size_hint_y: 0.25
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: app.config["images"]["bar_dark"] if bool(int(app.config["layout"]["dark_mode"])) else app.config["images"]["bar_bright"]
+        BoxLayout:
+            TTLabel:
+                size_hint_x: None
+                width: self.parent.width*0.2
+                text: f"Status: "
+            TTLabel:
+                id: status
+                size_hint_x: None
+                width: self.parent.width*0.8
+                text: "No status"
+        BoxLayout:
+            orientation: "horizontal"
+            padding: dp(10)
+            TTButton:
+                text: "Test status"
+                on_release: root.update_status("This is even a much much longer text - what will happen? No one knows ..")
+            TTButton:
+                text: "Test warning"
+                on_release: root.update_status("This is dangerous", warning=True)
+            TTButton:
+                text: "Test critical warning"
+                on_release: root.update_status("Alright this is damaging the device", critical=True)

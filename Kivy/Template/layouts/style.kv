@@ -1,0 +1,41 @@
+########### STYLE DEFINITIONS ##########
+
+<Tooltip>:
+    size_hint: None, None
+    size: self.texture_size[0]+5, self.texture_size[1]+5
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<TTButton>:
+    font_size: int(app.config["layout"]["font_size_button"])
+    color: (1, 1, 1, 1) if bool(int(app.config["layout"]["dark_mode"])) else (0, 0, 0, 1)  # white text if darkmode
+
+<TTLabel>:
+    font_size: int(app.config["layout"]["font_size_text"])
+    color: (1, 1, 1, 1) if bool(int(app.config["layout"]["dark_mode"])) else (0, 0, 0, 1)  # white text if darkmode
+
+<TTLabelH1@TTLabel>:
+    font_size: int(app.config["layout"]["font_size_h1"])
+    color: (1, 1, 1, 1) if bool(int(app.config["layout"]["dark_mode"])) else (0, 0, 0, 1)  # white text if darkmode
+    bold: True
+
+<TTLabelH2@TTLabel>:
+    font_size: int(app.config["layout"]["font_size_h2"])
+    color: (1, 1, 1, 1) if bool(int(app.config["layout"]["dark_mode"])) else (0, 0, 0, 1)  # white text if darkmode
+
+<HLine@Widget>:
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            source: app.config["images"]["horizontal_line"]
+            pos: self.pos
+            size: self.size
+    size_hint_y: None
+    height: dp(6)
+
+
