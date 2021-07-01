@@ -23,8 +23,8 @@ from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 # from kivy.base import EventLoop
 
-# %% lib imports
-from lib.kivy_utils import TTLabel, TTButton, TTSlider, TTSwitch
+# %% library imports
+from library.kivy_utils import TTLabel, TTButton, TTSlider, TTSwitch
 
 """ ################################################################################################################### 
 ################################################# Configuration #######################################################
