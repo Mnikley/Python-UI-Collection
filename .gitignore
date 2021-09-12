@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Tkinter template stuff
+TKinter/Template/config.ini
