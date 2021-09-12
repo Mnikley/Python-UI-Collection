@@ -712,7 +712,6 @@ class UI(ThemedTk):
 
         Separator(frame, orient="horizontal").pack(fill="x", pady=5)
 
-        Label(frame, text="Nothing there yet in user management").pack(side="top")
         for i in range(20):
             Label(frame, text=f"Alot of labels {i}").pack(anchor="w")
 
