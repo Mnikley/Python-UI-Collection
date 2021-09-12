@@ -7,7 +7,7 @@ Author: Matthias Ley
 """
 
 from tkinter import simpledialog, filedialog, Toplevel, Menu, Canvas, messagebox, font, TclError
-from tkinter import StringVar, IntVar, DoubleVar, BooleanVar
+from tkinter import StringVar, IntVar, DoubleVar, BooleanVar, Listbox
 from tkinter.ttk import Label, Button, Frame, Entry, Separator, Combobox, Progressbar, Checkbutton
 from tkinter.ttk import Style, Notebook, Scrollbar, LabeledScale, Scale, Radiobutton, LabelFrame
 from ttkthemes import ThemedTk
@@ -51,6 +51,7 @@ class Logger(object):
     - can be enabled via config.ini when setting logger=True or via GUI
     - logs to console and to .txt file in folder logs with timestamps
     """
+
     def __init__(self, stream):
         self.terminal = stream
         self.log = open(f"logs{os.sep}{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log", 'a')
@@ -62,12 +63,13 @@ class Logger(object):
     def flush(self):
         pass
 
-        
+
 class AutoScrollbar(Scrollbar):
     """AutoScrollbar class
     - displays/hides a scrollbar_y when outer window reaches a certain size
     - applied to canvas > handed over to Frame self.rootframe which is the parent for Notebook self.tab_root
     """
+
     def set(self, low, high):
         if float(low) <= 0.0 and float(high) >= 1.0:
             self.tk.call("grid", "remove", self)
@@ -120,6 +122,48 @@ class ToolTip(object):
             tw.destroy()
 
 
+class RCListbox(Listbox):
+    """Listbox allowing right-click commands"""
+
+    def __init__(self, parent, *args, **kwargs):
+        Listbox.__init__(self, parent, *args, **kwargs)
+
+        # add scrollbar to the right
+        scrollbar = Scrollbar(parent)
+        scrollbar.pack(side="right", fill="y")
+        self.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.yview)
+
+        self.popup_menu = Menu(self, tearoff=0)
+        self.popup_menu.add_command(label="Delete", command=self.delete_selected)
+        self.popup_menu.add_command(label="Select All", command=self.select_all)
+
+        self.bind("<Button-3>", self.popup)
+        self.bind("<<ListboxSelect>>", self.callback)
+
+    def popup(self, event):
+        try:
+            self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            self.popup_menu.grab_release()
+
+    def delete_selected(self):
+        for i in self.curselection()[::-1]:
+            self.delete(i)
+            print(f"Deleted listbox entry {i}")
+
+    def select_all(self):
+        self.selection_set(0, 'end')
+        print(f"You have selected {len(self.curselection())} items")
+
+    def callback(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+            data = event.widget.get(index)
+            print(f"You selected index {index} with the value {data}")
+
+
 def create_tooltip(widget, text):
     """
     Create tooltip for any widget.
@@ -144,7 +188,7 @@ def create_tooltip(widget, text):
 def restart_ui(obj):
     """Restart the application. Runtime environment is lost!"""
     python = sys.executable
-    os.execl(python, python, * sys.argv)
+    os.execl(python, python, *sys.argv)
 
 
 class UI(ThemedTk):
@@ -191,8 +235,8 @@ class UI(ThemedTk):
         self.font_default = f"{self.font_family} {int(self.font_size)} normal"
         self.font_bold = f"{self.font_family} {int(self.font_size)} bold"
         self.font_bold_underlined = f"{self.font_family} {int(self.font_size)} bold underlined"
-        self.font_header = f"{self.font_family} {int(self.font_size)+4} bold"
-        self.font_subheader = f"{self.font_family} {int(self.font_size)+2} bold"
+        self.font_header = f"{self.font_family} {int(self.font_size) + 4} bold"
+        self.font_subheader = f"{self.font_family} {int(self.font_size) + 2} bold"
 
         # create style for LabelFrames depending on current UI theme (call with style="Red.TLabelframe.Label")
         self.style_conf = Style()
@@ -214,7 +258,8 @@ class UI(ThemedTk):
 
         # set window geometry
         pct = float(self.cfg["style"]["window_size"])
-        self.window_size_x, self.window_size_y = int(self.winfo_screenwidth()*pct), int(self.winfo_screenheight()*pct)
+        self.window_size_x, self.window_size_y = int(self.winfo_screenwidth() * pct), int(
+            self.winfo_screenheight() * pct)
 
         if pct == 1:
             self.wm_attributes("-fullscreen", "true")
@@ -288,6 +333,7 @@ class UI(ThemedTk):
 
         self.build_scrollable_frame_post(canvas, frame)
         """
+
         # # inner function
         def _on_mousewheel(event):
             tab_index = self.tab_root.index(self.tab_root.select())  # index of currently selected tab
@@ -472,8 +518,8 @@ class UI(ThemedTk):
         lbl["json_header"].grid(row=0, column=0, columnspan=2, padx=5, sticky="w")
         Separator(frame, orient="horizontal").grid(row=1, column=0, columnspan=99, pady=5, sticky="ew")
         lbl["json_help_text"] = Label(frame, text="Write fields of the file.json file by entering values "
-                                                        "and pressing enter. Might be linked to functions in the future"
-                                                        " aswell (sending laser current changes automatically)")
+                                                  "and pressing enter. Might be linked to functions in the future"
+                                                  " aswell (sending laser current changes automatically)")
         lbl["json_help_text"].grid(row=2, column=0, columnspan=2, padx=5, sticky="w")
 
         Separator(frame, orient="horizontal").grid(row=10, column=0, columnspan=99, pady=5, sticky="ew")
@@ -671,13 +717,16 @@ class UI(ThemedTk):
             Label(frame, text=f"Alot of labels {i}").pack(anchor="w")
 
         sub_frame = Frame(frame)
-        for j in range(20):
+        for j in range(10):
             Label(sub_frame, text=f"More horizontal labels {j}").pack(side="left", anchor="w")
         sub_frame.pack(anchor="w")
 
         Separator(frame, orient="horizontal").pack(fill="x", pady=5)
 
-        Label(frame, text="And thats some non-anchored text at the bottom").pack(side="bottom", padx=5, pady=2)
+        list_box = RCListbox(frame, selectmode="single")
+        for i in range(15):
+            list_box.insert("end", i)
+        list_box.pack(padx=5, pady=5, fill="both", expand=True)
 
         # create canvas window, update tasks, configure canvas
         self.build_scrollable_frame_post()
@@ -767,7 +816,7 @@ class UI(ThemedTk):
             return_text += " | callback triggered"
             print(f"""### JSON callback triggered! Available arguments: ###
 {'arg-name':<20} | {'current_value'}
-{'------'*6:}
+{'------' * 6:}
 {'mode':<20} | {mode}
 {'idx':<20} | {idx}
 {'key':<20} | {key}
@@ -927,7 +976,7 @@ Email:    matthias@leysolutions.com
 Optimized for Python 3.7, Windows 10 64-bit
 \u00A9 leysolutions 2021
 """)
-        
+
     def change_status(self, status=None, warning=None, error=None):
         """Change status text in bottom bar."""
         lbl["status"].config(text=f"Status: {status}")
@@ -965,7 +1014,8 @@ Optimized for Python 3.7, Windows 10 64-bit
 
     def set_screen_size(self, pct=0.5):
         """Set screensize to percentages"""
-        self.window_size_x, self.window_size_y = int(self.winfo_screenwidth()*pct), int(self.winfo_screenheight()*pct)
+        self.window_size_x, self.window_size_y = int(self.winfo_screenwidth() * pct), int(
+            self.winfo_screenheight() * pct)
 
         if pct == 1:
             self.wm_attributes("-fullscreen", "true")
@@ -1171,4 +1221,3 @@ some_link = https://www.google.at/
 
     app = UI()
     app.mainloop()
-
