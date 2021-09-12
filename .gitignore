@@ -130,3 +130,4 @@ dmypy.json
 
 # Tkinter template stuff
 TKinter/Template/config.ini
+!Tkinter/Template/lib
