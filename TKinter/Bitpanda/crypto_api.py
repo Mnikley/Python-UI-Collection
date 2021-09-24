@@ -5,7 +5,10 @@ Module to get Bitpanda wallet & transaction information and fetches current coin
 - Requires ExchangeRate-API key obtained from https://app.exchangerate-api.com/sign-up
 - BitPanda API Documentation: https://developers.bitpanda.com/platform/#/wallets-get
 """
-
+import os
+import tempfile
+import time
+import json
 import requests
 import datetime
 
@@ -60,13 +63,16 @@ def __get_data(root_url="https://api.bitpanda.com/v1/", sub_url="", headers=None
             return return_data
 
     elif resp.status_code == 401:
-        print("Wrong API Key / Access token!")
+        print("Bitpanda: Wrong API Key / Access token!")
         return
     elif resp.status_code == 500:
-        print("Internal server error!")
+        print("Bitpanda: Internal server error!")
+        return
+    elif resp.status_code == 422:
+        print("Bitpanda: API key expired!")
         return
     else:
-        print(f"Unknown status code received: {resp.status_code}")
+        print(f"Bitpanda: Unknown status code received: {resp.status_code}")
         return
 
 
@@ -280,6 +286,9 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
         print(f" {len(exchange_rates)} exchange rates generated. This has cost you 2 fcsapi.com credits ".center(120,
                                                                                                                  "*"))
 
+    # add not converted coins to output dict
+    exchange_rates["Not converted coins"] = bitpanda_coins
+
     # undo corrections
     exchange_rates[f"BEST/{currency}"] = exchange_rates.pop(f"BESTb/{currency}")
     exchange_rates[f"BTT/{currency}"] = exchange_rates.pop(f"BTTN/{currency}")
@@ -300,6 +309,8 @@ def get_trades(bitpanda_api_key=None):
 
     print(f"Total invested: {total_invested}")
 
+    return {"balance_data": balance_data, "total_invested": total_invested}
+
 
 def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_key=None, exchangerate_api_key=None,
                       conversion_currency="EUR", conversion_alt_currencies=["BTC", "USD"], conversion_silent=True):
@@ -316,8 +327,13 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
             print("Please provide exchangerate_api_key!")
             return
 
+    # fetch wallet_data from bitpanda API
     wallet_data = __get_data(sub_url="asset-wallets", bitpanda_api_key=bitpanda_api_key)
-    wallets = {}
+    if not wallet_data:
+        return
+
+    # pre-define output dictionary
+    wallets = {"return_string": ""}
 
     # fetch conversion data if enable_conversion is True
     if enable_conversion:
@@ -326,9 +342,12 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
                                                 alt_currencies=conversion_alt_currencies, silent=conversion_silent)
 
     # header
-    tmp = ["", f" | {'Current Value':<20}"][enable_conversion]
+    tmp_filler = f"Current Value [{conversion_currency}]"
+    tmp = ["", f" | {tmp_filler:<20}"][enable_conversion]
     sep_length = [66, 89][enable_conversion]
-    print(f"{'Symbol':<20} | {'Balance':<20} | {'Name':<20}{tmp}")
+    header_text = f"{'Symbol':<20} | {'Balance':<20} | {'Name':<20}{tmp}"
+    print(header_text)
+    wallets["return_string"] += f"{header_text}\n{'-'*sep_length}\n"
 
     # iterate over assets, collect wallet information and create formatted dict 'wallets'
     for asset in wallet_data["attributes"].keys():
@@ -341,6 +360,9 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
 
     tmp_wallet = {}
     for asset, asset_data in wallets.items():
+        if asset == "return_string":
+            continue
+
         converted_sum = 0
         # pre-evaluate if balances in asset are all zero
         sum_wallets = sum([float(f["attributes"]["balance"]) for f in asset_data])
@@ -369,18 +391,25 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
 
             tmp_convert = ["", f" | {converted_val}"][enable_conversion]
 
-            # print information
-            print(f"{tmp['cryptocoin_symbol']:<20} | {tmp['balance']:<20} | {tmp['name']:<20}{tmp_convert}")
+            # print information and append to return_string
+            tmp_str = f"{tmp['cryptocoin_symbol']:<20} | {tmp['balance']:<20} | {tmp['name']:<20}{tmp_convert}"
+            print(tmp_str)
+            wallets["return_string"] += f"{tmp_str}\n"
 
         # print converted sum at end
         if enable_conversion and converted_sum != 0:
             tmp_wallet[f"summary_{asset}"] = {f"Sum {conversion_currency}": converted_sum,
                                               "Timestamp": datetime.datetime.now()}
             print("-"*sep_length)
-            print(f"{'':<66} | {converted_sum:<20}")
+            sum_text = f"{'':<66} | {converted_sum:<20}"
+            print(sum_text)
+            wallets["return_string"] += f"{'-'*sep_length}\n{sum_text}\n{'-'*sep_length}\n"
 
-    # join dicts
-    wallets = {**wallets, **tmp_wallet}
+    # join dicts, append conversion_rates
+    if enable_conversion:
+        wallets = {**wallets, **tmp_wallet, "exchange_rates": conversion_rates}
+    else:
+        wallets = {**wallets, **tmp_wallet}
 
     return wallets
 
@@ -390,9 +419,18 @@ def get_fiat_wallets(bitpanda_api_key=None):
     if not bitpanda_api_key:
         return
 
-    fiat_data = __get_data(sub_url="fiatwallets")
-    print(f" {len(fiat_data)} fiat wallets ".center(66, "*"))
+    # fetch fiat wallet data
+    fiat_data = __get_data(sub_url="fiatwallets", bitpanda_api_key=bitpanda_api_key)
 
+    # predefine return string
+    return_string = ""
+
+    # print header
+    tmp_header = f" {len(fiat_data)} fiat wallets ".center(66, "*")
+    print(tmp_header)
+    return_string += f"{tmp_header}\n"
+
+    # iterate over fiat wallet data
     for fiat_wallet in fiat_data:
         tmp = fiat_wallet["attributes"]
 
@@ -401,7 +439,11 @@ def get_fiat_wallets(bitpanda_api_key=None):
             continue
 
         # print information
-        print(f"{tmp['fiat_symbol']:<20} | {tmp['balance']:<20} | {tmp['name']:<20}")
+        tmp_text = f"{tmp['fiat_symbol']:<20} | {tmp['balance']:<20} | {tmp['name']:<20}"
+        print(tmp_text)
+        return_string += f"{tmp_text}\n"
+
+    return {"fiat_data": fiat_data, "return_string": return_string}
 
 
 def get_fiat_transactions(bitpanda_api_key=None):
@@ -410,33 +452,47 @@ def get_fiat_transactions(bitpanda_api_key=None):
         return
 
     # get transaction data
-    transaction_data = __get_data(sub_url="fiatwallets/transactions")
+    transaction_data = __get_data(sub_url="fiatwallets/transactions", bitpanda_api_key=bitpanda_api_key)
 
     # get lookup-table
-    lookup = __resolve_bitpanda_crypto_ids()
+    lookup = __resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
+
+    # predefine return string
+    return_string = ""
 
     # header
-    print(f"{'Time':<30} | {'Type':<10} | {'Fiat ID':<10} | {'Fiat Amount':<15} | {'Crypto ID':<10} | "
-          f"{'Crypto Amount':<15} | {'Price':<15}")
-
-    print(f" {len(transaction_data)} fiat transactions ".center(123, "*"))
+    header_tmp = f"{'Time':<30} | {'Type':<10} | {'Fiat ID':<10} | {'Fiat Amount':<15} | {'Crypto ID':<10} | " \
+                 f"{'Crypto Amount':<15} | {'Price':<15}"
+    print(header_tmp)
+    return_string += f"{header_tmp}\n"
+    header_sep_tmp = f" {len(transaction_data)} fiat transactions ".center(123, "*")
+    print(header_sep_tmp)
+    return_string += f"{header_sep_tmp}\n"
 
     # iterate over transactions
     for transaction in transaction_data:
         tmp = transaction["attributes"]
 
         # print information
-        time = " ".join(tmp["time"]["date_iso8601"].replace("T", " ").split())
+        tmp_time = " ".join(tmp["time"]["date_iso8601"].replace("T", " ").split())
         if tmp["type"] == "buy":
             trade = tmp["trade"]["attributes"]
             if int(trade["cryptocoin_id"]) in lookup.keys():
                 trade["cryptocoin_id"] = f"{trade['cryptocoin_id']:<2} | {lookup[int(trade['cryptocoin_id'])]}"
-            print(f"{time:<30} | {tmp['type']:<10} | {trade['fiat_id']:<10} | {trade['amount_fiat']:<15} | "
-                  f"{trade['cryptocoin_id']:<10} | {trade['amount_cryptocoin']:<15} | {trade['price']:<15}")
+            tmp_str = f"{tmp_time:<30} | {tmp['type']:<10} | {trade['fiat_id']:<10} | {trade['amount_fiat']:<15} | " \
+                      f"{trade['cryptocoin_id']:<10} | {trade['amount_cryptocoin']:<15} | {trade['price']:<15}"
+            print(tmp_str)
+            return_string += f"{tmp_str}\n"
         elif tmp["type"] == "deposit":
-            print(f"{time:<30} | {tmp['type']:<10} | {tmp['fiat_id']:<10} | {tmp['amount']:<15}")
+            tmp_str = f"{tmp_time:<30} | {tmp['type']:<10} | {tmp['fiat_id']:<10} | {tmp['amount']:<15}"
+            print(tmp_str)
+            return_string += f"{tmp_str}\n"
         else:
-            print(f"Unknown transaction type: {tmp['type']}")
+            tmp_str = f"Unknown transaction type: {tmp['type']}"
+            print(tmp_str)
+            return_String += f"{tmp_str}\n"
+
+    return {"transaction_data": transaction_data, "return_string": return_string}
 
 
 def get_currency_information():
@@ -444,6 +500,28 @@ def get_currency_information():
     currency_data = __get_data(root_url="https://api.exchange.bitpanda.com/public/v1/currencies",
                                headers={"Accept": "application/json"})
     print(currency_data)
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, z):
+        if isinstance(z, datetime.datetime):
+            return str(z)
+        else:
+            return super().default(z)
+
+
+def write_to_temporary_file(data=None, suffix=".json"):
+    """Write data to a temporary file"""
+    temp_file = tempfile.NamedTemporaryFile(suffix=suffix)
+    if suffix == ".json":
+        temp_file.write(json.dumps(data, indent=4, cls=DateTimeEncoder).encode())
+    else:
+        temp_file.write(data)
+    temp_file.flush()
+    os.startfile(temp_file.name)
+    time.sleep(1)
+    print("Launched temporary file:", temp_file.name)
+    temp_file.close()
 
 
 if __name__ == "__main__":

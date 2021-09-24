@@ -4,7 +4,7 @@ Tkinter GUI to display data from Bitpanda account
 """
 
 
-from tkinter import Tk, Toplevel, SOLID, Menu, Label, Button, Frame, Checkbutton, BooleanVar, StringVar
+from tkinter import Tk, Toplevel, SOLID, Menu, Label, Button, Frame, Checkbutton, BooleanVar, StringVar, LabelFrame
 from tkinter import simpledialog, messagebox
 from tkinter.ttk import Separator
 from tkinter.constants import HORIZONTAL
@@ -13,7 +13,8 @@ from configparser import ConfigParser
 import datetime
 import os
 import json
-from crypto_api import get_trades, get_asset_wallets, get_fiat_wallets, get_fiat_transactions
+import tempfile
+from crypto_api import get_trades, get_asset_wallets, get_fiat_wallets, get_fiat_transactions, write_to_temporary_file
 
 
 class ToolTip(object):
@@ -39,21 +40,13 @@ class ToolTip(object):
         label = Label(tw, text=self.text, anchor="w",
                       background="#ffffe0", relief=SOLID, borderwidth=1,
                       font=("tahoma", "8", "normal"))
-        label.pack(ipadx=5, ipady=5)
+        label.pack(ipadx=5, ipady=5, fill="both")
 
     def hidetip(self):
         tw = self.tipwindow
         self.tipwindow = None
         if tw:
             tw.destroy()
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, z):
-        if isinstance(z, datetime.datetime):
-            return str(z)
-        else:
-            return super().default(z)
 
 
 def create_tooltip(widget, text):
@@ -98,36 +91,44 @@ class UI(Tk):
 
     def build_ui(self):
 
-        # INFO
-        Label(text="STATUS").pack()
+        Label(text="Bitpanda UI", font=("Arial", 18)).pack()
 
-        Separator(self, orient="horizontal").pack(fill="x", pady=5)
+        # INFO
+        self.wdgs["status_frame"] = LabelFrame(self, text="API key status")
 
         self.wdgs["bitpanda_api_key"] = StringVar(value=self.cfg.get("bitpanda", "api_key"))
         self.wdgs["bitpanda_api_key_displayvar"] = StringVar(value="Not set")
-        self.wdgs["bitpanda_api_key_label"] = Label(textvariable=self.wdgs["bitpanda_api_key_displayvar"])
-        self.wdgs["bitpanda_api_key_label"].pack()
+        self.wdgs["bitpanda_api_key_label"] = Label(self.wdgs["status_frame"],
+                                                    textvariable=self.wdgs["bitpanda_api_key_displayvar"])
+        self.wdgs["bitpanda_api_key_label"].grid(row=0, column=1, padx=2, sticky="w")
+        Label(self.wdgs["status_frame"], text="Bitpanda").grid(row=0, column=0, padx=2, sticky="w")
         
         self.wdgs["forexcryptostock_api_key"] = StringVar(value=self.cfg.get("forexcryptostock", "api_key"))
         self.wdgs["forexcryptostock_api_key_displayvar"] = StringVar(value="Not set")
-        self.wdgs["forexcryptostock_api_key_label"] = Label(textvariable=self.wdgs["forexcryptostock_api_key_displayvar"])
-        self.wdgs["forexcryptostock_api_key_label"].pack()
+        self.wdgs["forexcryptostock_api_key_label"] = Label(self.wdgs["status_frame"],
+                                                            textvariable=self.wdgs["forexcryptostock_api_key_displayvar"])
+        self.wdgs["forexcryptostock_api_key_label"].grid(row=1, column=1, padx=2, sticky="w")
+        Label(self.wdgs["status_frame"], text="Forex Crypto Stock").grid(row=1, column=0, padx=2, sticky="w")
         
         self.wdgs["exchangerate_api_key"] = StringVar(value=self.cfg.get("exchangerate", "api_key"))
         self.wdgs["exchangerate_api_key_displayvar"] = StringVar(value="Not set")
-        self.wdgs["exchangerate_api_key_label"] = Label(textvariable=self.wdgs["exchangerate_api_key_displayvar"])
-        self.wdgs["exchangerate_api_key_label"].pack()
+        self.wdgs["exchangerate_api_key_label"] = Label(self.wdgs["status_frame"],
+                                                        textvariable=self.wdgs["exchangerate_api_key_displayvar"])
+        self.wdgs["exchangerate_api_key_label"].grid(row=2, column=1, padx=2, sticky="w")
+        Label(self.wdgs["status_frame"], text="ExchangeRate").grid(row=2, column=0, padx=2, sticky="w")
 
-        Separator(self, orient="horizontal").pack(fill="x", pady=5)
+        self.wdgs["status_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
+
+        # Separator(self, orient="horizontal").pack(fill="x", pady=5)
 
         # GET ASSETS FRAME
-        self.wdgs["get_assets_frame"] = Frame(self)
+        self.wdgs["get_assets_frame"] = LabelFrame(self, text="Bitpanda Assets")
 
         self.wdgs["convert_assets_var"] = BooleanVar(value=False)
         self.wdgs["convert_assets_enable"] = Checkbutton(self.wdgs["get_assets_frame"], text="Convert",
                                                          variable=self.wdgs["convert_assets_var"])
 
-        self.wdgs["convert_assets_enable"].pack(side="left")
+        self.wdgs["convert_assets_enable"].grid(row=0, column=0, sticky="w")
         current_currency = self.cfg.get("general", "main_currency")
         create_tooltip(self.wdgs["convert_assets_enable"], f"If checked, balances will be converted to "
                                                            f"{current_currency} by using the forex crypto stock API and "
@@ -136,20 +137,78 @@ class UI(Tk):
         self.wdgs["convert_assets_debug_var"] = BooleanVar(value=False)
         self.wdgs["convert_assets_debug"] = Checkbutton(self.wdgs["get_assets_frame"], text="Show details",
                                                         variable=self.wdgs["convert_assets_debug_var"])
-        self.wdgs["convert_assets_debug"].pack(side="left")
-        create_tooltip(self.wdgs["convert_assets_debug"], "Prints details of conversion to console if enabled")
+        self.wdgs["convert_assets_debug"].grid(row=0, column=1, sticky="w")
+        create_tooltip(self.wdgs["convert_assets_debug"], "Print details of the conversion steps to console")
 
         self.wdgs["convert_assets_export_var"] = BooleanVar(value=False)
         self.wdgs["convert_assets_export"] = Checkbutton(self.wdgs["get_assets_frame"], text="Export",
                                                          variable=self.wdgs["convert_assets_export_var"])
-        self.wdgs["convert_assets_export"].pack(side="left")
-        create_tooltip(self.wdgs["convert_assets_export"], "Exports data to a .json file if enabled")
+        self.wdgs["convert_assets_export"].grid(row=1, column=0, sticky="w")
+        create_tooltip(self.wdgs["convert_assets_export"], "Exports data to a .json file")
 
         self.wdgs["get_assets"] = Button(self.wdgs["get_assets_frame"], text="Get Assets", command=self.get_assets)
-        self.wdgs["get_assets"].pack(side="left")
+        self.wdgs["get_assets"].grid(row=1, column=1, columnspan=2)
         create_tooltip(self.wdgs["get_assets"], "Get Assets from various wallets from your Bitpanda account. "
                                                 "Includes Stocks, Metals, Cryptos etc.")
-        self.wdgs["get_assets_frame"].pack()
+
+        self.wdgs["current_balance_var"] = StringVar(value="None")
+        self.wdgs["current_balance_label"] = Label(self.wdgs["get_assets_frame"],
+                                                   text=f"Balance [{self.cfg.get('general','main_currency')}]:")
+        self.wdgs["current_balance_label"].grid(row=2, column=0, sticky="w")
+        self.wdgs["current_balance"] = Label(self.wdgs["get_assets_frame"],
+                                             textvariable=self.wdgs["current_balance_var"])
+        self.wdgs["current_balance"].grid(row=2, column=1, columnspan=2)
+
+        self.wdgs["get_assets_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
+
+        # GET TRADES
+        self.wdgs["get_trades_frame"] = LabelFrame(self, text="Bitpanda Trades")
+        self.wdgs["get_trades_export_var"] = BooleanVar(value=False)
+        self.wdgs["get_trades_export"] = Checkbutton(self.wdgs["get_trades_frame"], text="Export",
+                                                     variable=self.wdgs["get_trades_export_var"])
+        self.wdgs["get_trades_export"].grid(row=0, column=0, sticky="w")
+        create_tooltip(self.wdgs["convert_assets_export"], "Exports data to a .json file")
+        self.wdgs["get_trades"] = Button(self.wdgs["get_trades_frame"], text="Get Trades", command=self.get_trades)
+        self.wdgs["get_trades"].grid(row=0, column=1)
+        self.wdgs["get_trades_amount_label"] = Label(self.wdgs["get_trades_frame"], text=f"Trades:")
+        self.wdgs["get_trades_amount_label"].grid(row=1, column=0, padx=2, sticky="w")
+        self.wdgs["get_trades_amount_var"] = StringVar(value="None")
+        self.wdgs["get_trades_amount"] = Label(self.wdgs["get_trades_frame"], 
+                                               textvariable=self.wdgs["get_trades_amount_var"])
+        self.wdgs["get_trades_amount"].grid(row=1, column=1)
+        self.wdgs["get_trades_invested_label"] = Label(self.wdgs["get_trades_frame"],
+                                                       text=f"Invested [{self.cfg.get('general','main_currency')}]:")
+        self.wdgs["get_trades_invested_label"].grid(row=2, column=0, padx=2, sticky="w")
+        self.wdgs["get_trades_invested_var"] = StringVar(value="None")
+        self.wdgs["get_trades_invested"] = Label(self.wdgs["get_trades_frame"],
+                                                 textvariable=self.wdgs["get_trades_invested_var"])
+        self.wdgs["get_trades_invested"].grid(row=2, column=1)
+        self.wdgs["get_trades_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
+
+        # GET FIAT INFO
+        self.wdgs["get_fiat_frame"] = LabelFrame(self, text="Bitpanda Fiat Data")
+        self.wdgs["get_fiat_export_var"] = BooleanVar(value=False)
+        self.wdgs["get_fiat_export"] = Checkbutton(self.wdgs["get_fiat_frame"], text="Export",
+                                                   variable=self.wdgs["get_fiat_export_var"])
+        self.wdgs["get_fiat_export"].grid(row=0, column=0, sticky="w")
+        
+        self.wdgs["get_fiat"] = Button(self.wdgs["get_fiat_frame"], text="Get Fiat Data", command=self.get_fiat)
+        self.wdgs["get_fiat"].grid(row=0, column=1)
+
+        self.wdgs["get_fiat_balance_var"] = StringVar(value="None")
+        self.wdgs["get_fiat_balance_label"] = Label(self.wdgs["get_fiat_frame"], text="Balance")
+        self.wdgs["get_fiat_balance_label"].grid(row=1, column=0, padx=2, sticky="w")
+        self.wdgs["get_fiat_balance"] = Label(self.wdgs["get_fiat_frame"],
+                                              textvariable=self.wdgs["get_fiat_balance_var"])
+        self.wdgs["get_fiat_balance"].grid(row=1, column=1)
+        self.wdgs["get_fiat_transactions_var"] = StringVar(value="None")
+        self.wdgs["get_fiat_transactions_label"] = Label(self.wdgs["get_fiat_frame"], text="Transactions")
+        self.wdgs["get_fiat_transactions_label"].grid(row=2, column=0, padx=2, sticky="w")
+        self.wdgs["get_fiat_transactions"] = Label(self.wdgs["get_fiat_frame"],
+                                                   textvariable=self.wdgs["get_fiat_transactions_var"])
+        self.wdgs["get_fiat_transactions"].grid(row=2, column=1)
+
+        self.wdgs["get_fiat_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
 
     def build_menu(self):
         """Build the menu bar on top"""
@@ -227,24 +286,24 @@ class UI(Tk):
             if isinstance(wdg, StringVar):
                 if wdg_id.startswith(section) and wdg_id.endswith(option):
                     wdg.set(value)
-                    if value != "None":
-                        self.wdgs[f"{wdg_id}_displayvar"].set(f"{wdg_id} set")
-                    else:
-                        self.wdgs[f"{wdg_id}_displayvar"].set(f"{wdg_id} not set")
-                    create_tooltip(self.wdgs[f"{wdg_id}_label"], value)
+                    self.refresh_tooltips()
 
     def refresh_tooltips(self):
-        print("Refreshing tooltips ..")
+        """Refresh tooltips to update stringvars after a config-change. Additionally changes label texts and colors"""
         for wdg_id, wdg in self.wdgs.items():
             if isinstance(wdg, StringVar):
                 try:
                     if wdg.get() != "None":
-                        self.wdgs[f"{wdg_id}_displayvar"].set(f"{wdg_id} set")
+                        self.wdgs[f"{wdg_id}_displayvar"].set(f"Set")
+                        self.wdgs[f"{wdg_id}_label"].config(fg="green")
                         create_tooltip(self.wdgs[f"{wdg_id}_label"], wdg.get())
                     else:
-                        self.wdgs[f"{wdg_id}_displayvar"].set(f"{wdg_id} not set")
-                        create_tooltip(self.wdgs[f"{wdg_id}_label"], "Set via Configuration panel")
-                except Exception as e:
+                        self.wdgs[f"{wdg_id}_displayvar"].set(f"Not set")
+                        self.wdgs[f"{wdg_id}_label"].config(fg="red")
+                        create_tooltip(self.wdgs[f"{wdg_id}_label"], f"Set via Credentials > "
+                                                                     f"{wdg_id.split('_')[0].title()} > "
+                                                                     f"Change API key")
+                except:
                     pass
 
         self.update_idletasks()
@@ -254,7 +313,7 @@ class UI(Tk):
         - Requires additional forex crypto & exchangerate API keys if enable_conversion is True
         """
         enable_conversion = self.wdgs["convert_assets_var"].get()
-        debug_text = self.wdgs["convert_assets_debug_var"].get()
+        debug_text = not self.wdgs["convert_assets_debug_var"].get()
         export_as_json = self.wdgs["convert_assets_export_var"].get()
         bitpanda_api_key = self.cfg.get("bitpanda", "api_key")
         forex_api_key = self.cfg.get("forexcryptostock", "api_key")
@@ -273,10 +332,67 @@ class UI(Tk):
                                         conversion_currency=conversion_currency, conversion_silent=debug_text,
                                         conversion_alt_currencies=conversion_alt_currencies)
 
+        if not wallet_data:
+            return
+
+        # write to temporary file
         if export_as_json:
-            file_name = f'wallet_dump_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.json'
-            with open(file_name, "w") as f:
-                f.write(json.dumps(wallet_data, indent=4, cls=DateTimeEncoder))
+            write_to_temporary_file(wallet_data)
+
+        # set StringVar to sum of converted values
+        converted_crypto_sum = wallet_data["summary_cryptocoin"][f"Sum {conversion_currency}"]
+        self.wdgs["current_balance_var"].set(str(round(converted_crypto_sum, 2)))
+
+        # create tooltip from return_string
+        wallet_data["return_string"] += f"\n!!!! Not converted coins: " \
+                                        f"{wallet_data['exchange_rates']['Not converted coins']} !!!!"
+        create_tooltip(self.wdgs["current_balance"], wallet_data["return_string"])
+
+    def get_trades(self):
+        """Get crypto trades from bitpanda API"""
+        # TODO: tooltip auf self.wdgs["get_trades_result"] zahl auf self.wdgs["get_trades_var"]
+        bitpanda_api_key = self.cfg.get("bitpanda", "api_key")
+        export_as_json = self.wdgs["get_trades_export_var"].get()
+
+        # fetch trade data
+        trade_data = get_trades(bitpanda_api_key=bitpanda_api_key)
+
+        if not trade_data:
+            return
+
+        self.wdgs["get_trades_amount_var"].set(len(trade_data["balance_data"]))
+        self.wdgs["get_trades_invested_var"].set(trade_data["total_invested"])
+
+        # write to temporary file
+        if export_as_json:
+            write_to_temporary_file(trade_data["balance_data"])
+
+    def get_fiat(self):
+        """Get fiat wallets and transactions from bitpanda API"""
+        bitpanda_api_key = self.cfg.get("bitpanda", "api_key")
+        export_as_json = self.wdgs["get_fiat_export_var"].get()
+
+        # fetch fiat wallets and transactions
+        fiat_wallet_data = get_fiat_wallets(bitpanda_api_key=bitpanda_api_key)
+        fiat_transaction_data = get_fiat_transactions(bitpanda_api_key=bitpanda_api_key)
+
+        if export_as_json:
+            export_dict = {"fiat_wallet_data": fiat_wallet_data["fiat_data"],
+                           "fiat_transaction_data": fiat_transaction_data["transaction_data"]}
+            write_to_temporary_file(export_dict)
+
+        wallet_info = []
+        for wallet in fiat_wallet_data["fiat_data"]:
+            if float(wallet["attributes"]["balance"]) != 0:
+                wallet_info.append(f"{wallet['attributes']['balance']} {wallet['attributes']['fiat_symbol']}")
+
+        wallet_info = ", ".join(wallet_info)
+
+        self.wdgs["get_fiat_balance_var"].set(wallet_info)
+        self.wdgs["get_fiat_transactions_var"].set(len(fiat_transaction_data['transaction_data']))
+
+        create_tooltip(self.wdgs["get_fiat_balance"], fiat_wallet_data["return_string"])
+        create_tooltip(self.wdgs["get_fiat_transactions"], fiat_transaction_data["return_string"])
 
 
 if __name__ == '__main__':
@@ -310,7 +426,7 @@ docs = https://app.exchangerate-api.com/sign-up
     app.title(f"Bitpanda UI")
     # app.overrideredirect(1)  # remove top badge
     # app.attributes("-toolwindow", True)
-    app.geometry("300x300")
+    # app.geometry("300x300")
     # style = ThemedStyle(app)
     # style.set_theme("plastik")
     app.mainloop()
