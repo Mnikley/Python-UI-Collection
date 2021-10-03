@@ -1,3 +1,7 @@
+[![build status](
+  http://img.shields.io/travis/Mnikley/Python-UI-Collection/master.svg?style=flat)](
+ https://travis-ci.org/Mnikley/Python-UI-Collection)
+
 # Python UI Collection
 This repository is a collection of Python User Interfaces including templates to develop UIs yourself, snippets and more-or-less finished UIs for various purposes. Based on the frameworks Tkinter and Kivy.
 
