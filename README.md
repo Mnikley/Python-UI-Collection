@@ -1,6 +1,9 @@
 [![build status](
   http://img.shields.io/travis/Mnikley/Python-UI-Collection/master.svg?style=flat)](
  https://travis-ci.org/Mnikley/Python-UI-Collection)
+ [![Total alerts](https://img.shields.io/lgtm/alerts/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/alerts/)
+ [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/context:javascript)
+ [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/context:python)
 
 # Python UI Collection
 This repository is a collection of Python User Interfaces including templates to develop UIs yourself, snippets and more-or-less finished UIs for various purposes. Based on the frameworks Tkinter and Kivy.
