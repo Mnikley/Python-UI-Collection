@@ -4,9 +4,11 @@
 import os
 import sys
 import psutil
-import win32console  # hide console
-import win32gui  # hide console
-import win32con  # hide console
+import platform
+if platform.system() == "Windows":
+    import win32console  # hide console
+    import win32gui  # hide console
+    import win32con  # hide console
 
 # %% kivy imports
 from kivy.config import Config
@@ -105,7 +107,7 @@ class Root(BoxLayout):
                 child.on_window_resize()
 
 
-class Navigator(App):
+class LeysolutionsApp(App):
     """App class, access attributes from .kv files via app.attribute_name"""
 
     def __init__(self, **kwargs):
@@ -113,9 +115,9 @@ class Navigator(App):
         self.splash_popup: Popup = None
 
     def build_config(self, config):
-        """Builds default config if none exists (t3.ini).
+        """Builds default config if none exists (leysolutionsapp.ini).
         - Root config: Config.get()
-        - Navigator config: self.config['section']['key']
+        - LeysolutionsApp config: self.config['section']['key']
         """
         config.setdefaults("general", {
             "console_enabled": "0"
@@ -142,7 +144,7 @@ class Navigator(App):
 
     def build_settings(self, settings):
         """Builds settings menu accessible with F1"""
-        settings.add_json_panel('Navigator configuration panel', self.config, "static" + os.sep + "settings_menu.json")
+        settings.add_json_panel('LeysolutionsApp configuration panel', self.config, "static" + os.sep + "settings_menu.json")
 
     def on_config_change(self, config, section, key, value):
         """Callback if configuration was changed"""
@@ -157,13 +159,14 @@ class Navigator(App):
                 Config.set("kivy", "default_font", tmp)
                 Config.write()  # writes to GUI.ini
 
-            if key == "console_enabled":
-                if bool(int(value)):
-                    print("enabling console")
-                    win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_SHOW)
-                else:
-                    print("disabling console")
-                    win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_HIDE)
+            if platform.system() == "Windows":
+                if key == "console_enabled":
+                    if bool(int(value)):
+                        print("enabling console")
+                        win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_SHOW)
+                    else:
+                        print("disabling console")
+                        win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_HIDE)
 
             print(f"Config updated: {section} | {key} | {value}")
             self.root.update_status(text=f"Config updated: {section} | {key} | {value}")
@@ -180,8 +183,9 @@ class Navigator(App):
         if bool(int(config["layout"]["show_splash"])):
             Clock.schedule_once(self.splash_screen, .01)
         # show/hide console
-        if bool(int(config["general"]["console_enabled"])) == False:
-            win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_HIDE)
+        if platform.system() == "Windows":
+            if bool(int(config["general"]["console_enabled"])) == False:
+                win32gui.ShowWindow(win32console.GetConsoleWindow(), win32con.SW_HIDE)
         return self.root
 
     def on_pause(self):
@@ -216,8 +220,11 @@ class Navigator(App):
             # logging.error(e)
 
         python = sys.executable
-        os.execl(python, python, "\"{}\"".format(sys.argv[0]))
+        if platform.system() == "Windows":
+            os.execl(python, python, "\"{}\"".format(sys.argv[0]))
+        elif platform.system() == "Linux":
+            os.execl(python, python, f"{sys.argv[0]}")
 
 
 if __name__ == "__main__":
-    Navigator().run()
+    LeysolutionsApp().run()

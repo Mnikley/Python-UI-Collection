@@ -122,3 +122,4 @@
             TTButton:
                 text: "Test critical warning"
                 on_release: root.update_status("Alright this is damaging the device", critical=True)
+                on_release: print(app.config["images"]["logo_splash"])
