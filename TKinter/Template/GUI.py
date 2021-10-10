@@ -20,13 +20,16 @@ import getpass
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor
-import win32gui  # hide console
-import win32con  # hide console
-import win32console  # hide console
+import platform
+if platform.system() == "Windows":
+    import win32gui  # hide console
+    import win32con  # hide console
+    import win32console  # hide console
 import json
 from requests import get  # external ip-check
 from pymongo import MongoClient
 import pymongo.errors as pymongo_errors
+
 
 # global dicts for widgets (buttons, labels, entries, frames, variables, other)
 btn, lbl, ent, frm, var, oth = {}, {}, {}, {}, {}, {}
@@ -251,7 +254,8 @@ class UI(ThemedTk):
 
         # set title, icon
         self.title(f"Tkinter Template GUI")
-        self.iconbitmap("static" + os.sep + "icon_dev.ico")
+        if platform.system() == "Windows":
+            self.iconbitmap("static" + os.sep + "icon_dev.ico")
 
         # set window geometry
         pct = float(self.cfg["style"]["window_size"])
@@ -295,9 +299,10 @@ class UI(ThemedTk):
         self.build_debug_ui()
 
         # get console
-        self.console = win32console.GetConsoleWindow()
-        if self.cfg["general"]["console"] == "False":
-            self.hide_console(overwrite=False)
+        if platform.system() == "Windows":
+            self.console = win32console.GetConsoleWindow()
+            if self.cfg["general"]["console"] == "False":
+                self.hide_console(overwrite=False)
 
     # *************************************************************************************************************** *
     # *************************************************************************************************************** *
@@ -999,14 +1004,16 @@ Optimized for Python 3.7, Windows 10 64-bit
 
     def hide_console(self, overwrite=True):
         """Hide the python console."""
-        win32gui.ShowWindow(self.console, win32con.SW_HIDE)
-        if overwrite:
-            self.write_cfg(section="general", option="console", value="False")
+        if platform.system() == "Windows":
+            win32gui.ShowWindow(self.console, win32con.SW_HIDE)
+            if overwrite:
+                self.write_cfg(section="general", option="console", value="False")
 
     def show_console(self):
         """Show the python console."""
-        win32gui.ShowWindow(self.console, win32con.SW_SHOW)
-        self.write_cfg(section="general", option="console", value="True")
+        if platform.system() == "Windows":
+            win32gui.ShowWindow(self.console, win32con.SW_SHOW)
+            self.write_cfg(section="general", option="console", value="True")
 
     def set_screen_size(self, pct=0.5):
         """Set screensize to percentages"""
