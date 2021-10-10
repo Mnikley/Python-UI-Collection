@@ -1224,13 +1224,13 @@ some_link = https://www.google.at/
             cfg.write(default_ini)
 
     # detect TRAVIS CI
-    if "TRAVIS" in os.environ:
+    if "TEAMCITY_JRE" in os.environ or "TRAVIS" in os.environ:
         print("UI instance canceled - mainloop avoided")
-    elif "TEAMCITY_JRE" in os.environ:
         app = UI()
         app.update()
         app.update_idletasks()
-        app.after(10, app.destroy())
+        app.after(100, app.destroy())
     else:
         app = UI()
         app.mainloop()
+
