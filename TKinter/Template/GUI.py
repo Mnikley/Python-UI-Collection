@@ -1224,4 +1224,11 @@ some_link = https://www.google.at/
             cfg.write(default_ini)
 
     app = UI()
-    app.mainloop()
+
+    # detect TRAVIS CI
+    if "TRAVIS" in os.environ:
+        app.update()
+        app.update_idletasks()
+        app.after(10, app.quit())
+    else:
+        app.mainloop()
