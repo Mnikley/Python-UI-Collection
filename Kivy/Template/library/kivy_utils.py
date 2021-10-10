@@ -1,4 +1,4 @@
-from kivy.properties import BooleanProperty, ObjectProperty, NumericProperty
+from kivy.properties import BooleanProperty, ObjectProperty
 from kivy.core.window import Window
 from kivy.uix.button import Button
 from kivy.uix.label import Label

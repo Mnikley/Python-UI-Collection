@@ -43,7 +43,7 @@ def __get_data(root_url="https://api.bitpanda.com/v1/", sub_url="", headers=None
 
         else:
             # append current response data to return_data
-            no_ret = [return_data.append(f) for f in response["data"]]
+            [return_data.append(f) for f in response["data"]]
 
             # iterate as long as there are 'next' links in response data, append response data to return_data
             while True:
@@ -57,7 +57,7 @@ def __get_data(root_url="https://api.bitpanda.com/v1/", sub_url="", headers=None
                 response = resp.json()
 
                 # append response data to return_data
-                no_ret = [return_data.append(f) for f in response["data"]]
+                [return_data.append(f) for f in response["data"]]
 
             print(f"Fetched {len(return_data)} entries")
             return return_data
@@ -304,6 +304,9 @@ def get_trades(bitpanda_api_key=None):
 
     balance_data = __get_data(sub_url="trades", bitpanda_api_key=bitpanda_api_key)
     total_invested = 0
+    if not balance_data:
+        return
+
     for trade in balance_data:
         total_invested += float(trade["attributes"]["amount_fiat"])
 
@@ -431,6 +434,9 @@ def get_fiat_wallets(bitpanda_api_key=None):
     return_string += f"{tmp_header}\n"
 
     # iterate over fiat wallet data
+    if not fiat_data:
+        return
+
     for fiat_wallet in fiat_data:
         tmp = fiat_wallet["attributes"]
 
@@ -470,6 +476,9 @@ def get_fiat_transactions(bitpanda_api_key=None):
     return_string += f"{header_sep_tmp}\n"
 
     # iterate over transactions
+    if not transaction_data:
+        return
+
     for transaction in transaction_data:
         tmp = transaction["attributes"]
 
@@ -490,7 +499,7 @@ def get_fiat_transactions(bitpanda_api_key=None):
         else:
             tmp_str = f"Unknown transaction type: {tmp['type']}"
             print(tmp_str)
-            return_String += f"{tmp_str}\n"
+            return_string += f"{tmp_str}\n"
 
     return {"transaction_data": transaction_data, "return_string": return_string}
 

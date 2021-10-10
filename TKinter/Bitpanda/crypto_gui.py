@@ -4,16 +4,11 @@ Tkinter GUI to display data from Bitpanda account
 """
 
 
-from tkinter import Tk, Toplevel, SOLID, Menu, Label, Button, Frame, Checkbutton, BooleanVar, StringVar, LabelFrame
+from tkinter import Tk, Toplevel, SOLID, Menu, Label, Button, Checkbutton, BooleanVar, StringVar, LabelFrame
 from tkinter import simpledialog, messagebox
-from tkinter.ttk import Separator
-from tkinter.constants import HORIZONTAL
 from functools import partial
 from configparser import ConfigParser
-import datetime
 import os
-import json
-import tempfile
 from crypto_api import get_trades, get_asset_wallets, get_fiat_wallets, get_fiat_transactions, write_to_temporary_file
 
 
@@ -303,7 +298,8 @@ class UI(Tk):
                         create_tooltip(self.wdgs[f"{wdg_id}_label"], f"Set via Credentials > "
                                                                      f"{wdg_id.split('_')[0].title()} > "
                                                                      f"Change API key")
-                except:
+                except Exception as e:
+                    print(e)
                     pass
 
         self.update_idletasks()

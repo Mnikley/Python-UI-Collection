@@ -7,9 +7,9 @@ Author: Matthias Ley
 """
 
 from tkinter import simpledialog, filedialog, Toplevel, Menu, Canvas, messagebox, font, TclError
-from tkinter import StringVar, IntVar, DoubleVar, BooleanVar, Listbox
-from tkinter.ttk import Label, Button, Frame, Entry, Separator, Combobox, Progressbar, Checkbutton
-from tkinter.ttk import Style, Notebook, Scrollbar, LabeledScale, Scale, Radiobutton, LabelFrame
+from tkinter import StringVar, BooleanVar, Listbox
+from tkinter.ttk import Label, Button, Frame, Entry, Separator, Progressbar, Checkbutton
+from tkinter.ttk import Style, Notebook, Scrollbar
 from ttkthemes import ThemedTk
 from functools import partial
 from configparser import ConfigParser
@@ -27,9 +27,6 @@ import json
 from requests import get  # external ip-check
 from pymongo import MongoClient
 import pymongo.errors as pymongo_errors
-
-# Library Imports
-from lib.utilities import test_function
 
 # global dicts for widgets (buttons, labels, entries, frames, variables, other)
 btn, lbl, ent, frm, var, oth = {}, {}, {}, {}, {}, {}
@@ -78,10 +75,10 @@ class AutoScrollbar(Scrollbar):
         Scrollbar.set(self, low, high)
 
     def pack(self, **kw):
-        raise (TclError, "pack cannot be used with this widget")
+        raise TclError("pack cannot be used with this widget")
 
     def place(self, **kw):
-        raise (TclError, "place cannot be used  with this widget")
+        raise TclError("place cannot be used  with this widget")
 
 
 class ToolTip(object):
@@ -1055,7 +1052,6 @@ Optimized for Python 3.7, Windows 10 64-bit
             # loop while thread is working
             while thread.running():
                 time.sleep(0.5)
-                pass
 
             # stop loading animation when thread is done
             self.stop_infinite_loading()
@@ -1165,6 +1161,8 @@ Optimized for Python 3.7, Windows 10 64-bit
                         while len(str(v_sub)) >= 100:
                             tmp += f"\t{k_sub}\t{v_sub[:100]}\n"
                             v_sub = v_sub[100:]
+                            if len(str(v_sub)) <= 100:
+                                break
                         else:
                             tmp += f"\t{k_sub}\t{v_sub}\n"
                 else:

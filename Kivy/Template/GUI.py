@@ -12,19 +12,15 @@ import win32con  # hide console
 from kivy.config import Config
 Config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "GUI.ini"))
 from kivy.app import App
-# from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
-# from datetime import datetime
-# from kivy.animation import Animation
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
-# from kivy.base import EventLoop
 
 # %% library imports
-from library.kivy_utils import TTLabel, TTButton, TTSlider, TTSwitch
+from library.kivy_utils import TTLabel, TTButton
 
 """ ################################################################################################################### 
 ################################################# Configuration #######################################################
