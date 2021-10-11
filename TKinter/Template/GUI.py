@@ -316,7 +316,7 @@ class UI(ThemedTk):
     def build_scrollable_frame(self, root_frame):
         """Builds a scrollable frame. Utilizes AutoScrollbar class.
 
-        Arguments
+        Parameters
         ---------
         root_frame : tk.Frame
 
@@ -327,13 +327,15 @@ class UI(ThemedTk):
 
         Example
         -------
-        root = self.tab_debug
-        canvas, frame = self.build_scrollable_frame(root)
+        To create a scrollable frame, execute the following code::
 
-        some_label = Label(frame, text="Hey")
-        some_label.pack()
+            root = self.tab_debug
+            canvas, frame = self.build_scrollable_frame(root)
 
-        self.build_scrollable_frame_post(canvas, frame)
+            some_label = Label(frame, text="Hey")
+            some_label.pack()
+
+            self.build_scrollable_frame_post(canvas, frame)
         """
 
         # # inner function
@@ -828,7 +830,19 @@ class UI(ThemedTk):
         self.change_status(return_text)
 
     def write_cfg(self, section=None, option=None, value=None, silent=False):
-        """Overwrite config.ini."""
+        """Overwrite config.ini
+
+        Parameters
+        ----------
+        section : string
+            section in config.ini
+        option : string
+            option (2nd level) in config.ini
+        value : any
+            value to write to specific [section][option]
+        silent : bool
+            If True, suppresses status update
+        """
         if not isinstance(value, str):
             value = str(value)
 
@@ -851,7 +865,12 @@ class UI(ThemedTk):
     def set_config_prompt(self, section=None, option=None, silent=False):
         """Set any parameter in config.ini via user input prompt
         - less descriptive than dedicated functions (e.g. set_login)
-        - Example call: self.set_any_parameter(section='mongodb', option='cluster')
+
+        Example
+        -------
+        ::
+
+            self.set_any_parameter(section='mongodb', option='cluster')
         """
 
         if section not in self.cfg.sections():
@@ -903,7 +922,12 @@ class UI(ThemedTk):
         self.open_file(env["json_path"])
 
     def set_json_folder(self, silent=False):
-        """Set folder for json files. Silent supresses status update in UI, force enforces prompt."""
+        """Set folder for json files
+
+         Parameters
+         ----------
+         silent : bool
+            If True, suppresses status update in UI, force enforces prompt"""
         if self.cfg["json"]["json_folder"] == "None":
             init_dir = os.path.realpath("\\")
         else:
@@ -931,7 +955,12 @@ class UI(ThemedTk):
             json.dump(env["json_content"], f, ensure_ascii=False, indent=4, separators=None)
 
     def open_file(self, filename):
-        """Try to open file."""
+        """Try to open a local file
+
+        Parameters
+        ----------
+        filename : string
+            Path to the file to open via os.startfile()"""
         try:
             os.startfile(filename)
             self.change_status(f"Opened {filename}")
@@ -979,7 +1008,16 @@ Optimized for Python 3.7, Windows 10 64-bit
 """)
 
     def change_status(self, status=None, warning=None, error=None):
-        """Change status text in bottom bar."""
+        """Change status text in bottom bar
+
+        Parameters
+        ----------
+        status : string
+            Status text to display in the status bar
+        warning : bool
+            If True, highlights the status text in orange
+        error : bool
+            If True, highlights the status text in red and puts the text to bold"""
         lbl["status"].config(text=f"Status: {status}")
         if warning:
             lbl["status"].config(foreground=self.orange, font=f"{self.font_family} 9 normal")  # orange
@@ -991,11 +1029,25 @@ Optimized for Python 3.7, Windows 10 64-bit
         print(status)
 
     def update_progress(self, value):
-        """Updates progress level of progressbar. Value can be from 0 to 100. """
+        """Updates progress level of progressbar
+
+        Parameters
+        ----------
+        value : int
+            Value to update progress bar to, ranging from 0 to 100"""
+        if value not in range(0, 101):
+            return
+
         oth["progress"]["value"] = value
         self.update()
 
     def change_style(self, style):
+        """Change current GUI style
+
+        Parameters
+        ----------
+        style : string
+            A list of styles can be retrieved via self.get_themes()"""
         self.set_theme(style)
 
         # overwrite cfg, restart UI
@@ -1003,20 +1055,30 @@ Optimized for Python 3.7, Windows 10 64-bit
         restart_ui(self)
 
     def hide_console(self, overwrite=True):
-        """Hide the python console."""
+        """Hide the python console
+
+        Parameters
+        ----------
+        overwrite : bool
+            Set to True to overwrite config.ini for a permanent change"""
         if platform.system() == "Windows":
             win32gui.ShowWindow(self.console, win32con.SW_HIDE)
             if overwrite:
                 self.write_cfg(section="general", option="console", value="False")
 
     def show_console(self):
-        """Show the python console."""
+        """Show the python console"""
         if platform.system() == "Windows":
             win32gui.ShowWindow(self.console, win32con.SW_SHOW)
             self.write_cfg(section="general", option="console", value="True")
 
     def set_screen_size(self, pct=0.5):
-        """Set screensize to percentages"""
+        """Set window size based on percentage of screen size
+
+        Parameters
+        ----------
+        pct : float
+            Set size of GUI window to percentage of screen size"""
         self.window_size_x, self.window_size_y = int(self.winfo_screenwidth() * pct), int(
             self.winfo_screenheight() * pct)
 
@@ -1049,7 +1111,9 @@ Optimized for Python 3.7, Windows 10 64-bit
 
         Example
         -------
-        self.loading(callback)
+        ::
+
+            self.loading(callback)
         """
 
         def __load(thread):
@@ -1090,6 +1154,7 @@ Optimized for Python 3.7, Windows 10 64-bit
         oth["progress"].start(10)
 
     def test_status_bar(self):
+        """Debug function to test status bar"""
         print("DBG test_status_bar")
         tmp = 0
         while tmp <= 100:
@@ -1188,6 +1253,7 @@ Optimized for Python 3.7, Windows 10 64-bit
 
 
 if __name__ == '__main__':
+    """ Boilerplate code. Creates default config.ini, queries CI/CDs from environmental variables, launches UI """
     # create default config.ini on first start
     if not os.path.isfile("config.ini"):
         print("No config.ini detected. Loading default configuration ..")
