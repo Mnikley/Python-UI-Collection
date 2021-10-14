@@ -8,6 +8,11 @@
 # Python UI Collection
 This repository is a collection of Python User Interfaces including templates to develop UIs yourself, snippets and more-or-less finished UIs for various purposes. Based on the frameworks Tkinter and Kivy.
 
+### Table of Contents  
+- [TKinter Template](#tkinter-template)
+- [TKinter Bitpanda UI](#tkinter-bitpanda-ui)
+- [Kivy Template](#kivy-template)
+
 # Tkinter Template
 Tkinter Template for Desktop Applications; Includes customized classes for scrollable frames, various themes (based on ttkthemes), loading animations, tooltips, config parser, MongoDB API, JSON editor and more
 
