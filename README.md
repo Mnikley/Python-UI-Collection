@@ -35,3 +35,19 @@ Lightweight Bitpanda UI to fetch assets (crypto, ETF, index, metal), trades, fia
 
 ![image](https://user-images.githubusercontent.com/75040444/134688788-5354dc49-a4a3-4575-a3cc-5aa36708f497.png)
 ![image](https://user-images.githubusercontent.com/75040444/134555724-a53edbb8-db9a-42ad-9bb3-4b122dc74d2b.png)
+
+# Kivy Template
+This template should help to get started on how to create responsive desktop applications with the [kivy framework](https://kivy.org/#home) including its [wide variety of widgets](https://kivy.org/doc/stable/api-kivy.uix.html). This template includes additional classes to enable tooltips and other usefull stuff.
+
+### Setup
+1. Clone repository: `git clone https://github.com/Mnikley/Python-UI-Collection`
+2. Navigate to folder: `cd Kivy/Template`
+3. Install requirements: `python -m pip install -r requirements.txt`
+4. Run GUI: `python GUI.py`
+
+![image](https://user-images.githubusercontent.com/75040444/137364780-a6db3d78-a21f-4f28-a796-ead600a5743a.png)
+![image](https://user-images.githubusercontent.com/75040444/137365136-e2081127-b3cd-47a0-a49f-acbd1657343a.png)
+![image](https://user-images.githubusercontent.com/75040444/137365197-dca534d4-f494-4ce2-a69e-3301c2b570d9.png)
+
+
+
