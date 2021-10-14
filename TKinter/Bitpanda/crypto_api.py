@@ -202,7 +202,7 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
                 if not silent:
                     print(f"Conversion found in Forex API: {alt_currency}/{currency}")
                 conversions.append(forex_symbol["symbol"])
-                alt_currencies.pop(idx)
+                print("Removed", alt_currencies.pop(idx))
 
     # if alt-currencies remain, check ExchangeRate-API for conversion rates
     if alt_currencies:
@@ -225,7 +225,7 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
                         print(f"Conversion found in ExchangeRate API: {alt_currency}/{currency} "
                               f"({ex_data['conversion_rates'][alt_currency]} : "
                               f"{ex_data['conversion_rates'][currency]})")
-                    alt_currencies.pop(idx)
+                    print("Removed", alt_currencies.pop(idx))
 
     # fetch conversion rates from forex API fcsapi.com
     if not silent:

@@ -300,7 +300,6 @@ class UI(Tk):
                                                                      f"Change API key")
                 except Exception as e:
                     print(e)
-                    pass
 
         self.update_idletasks()
 
