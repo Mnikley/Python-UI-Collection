@@ -76,7 +76,7 @@ def __get_data(root_url="https://api.bitpanda.com/v1/", sub_url="", headers=None
         return
 
 
-def __resolve_bitpanda_crypto_ids(bitpanda_api_key=None):
+def resolve_bitpanda_crypto_ids(bitpanda_api_key=None):
     """Resolve Bitpanda cryptocoin_id to descriptive name"""
     if not bitpanda_api_key:
         return
@@ -133,7 +133,7 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
         print(f" Fetched {len(forex_symbols['response'])} symbols from fcsapi.com ".center(120, "*"))
 
     # verify all bitpanda symbols exist in forex API
-    bitpanda_coins = __resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
+    bitpanda_coins = resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
     bitpanda_coins = list(bitpanda_coins.values())
     if not silent:
         print(f" Trying to verify {len(bitpanda_coins)} bitpanda symbols ".center(120, "*"))
@@ -319,16 +319,13 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
                       conversion_currency="EUR", conversion_alt_currencies=["BTC", "USD"], conversion_silent=True):
     """Get asset wallet information (crypto, metal, index, stocks, etf)"""
     if not bitpanda_api_key:
-        print("Please provide bitpanda_api_key!")
-        return
+        raise ValueError("Please provide bitpanda_api_key!")
 
     if enable_conversion:
-        if not forex_api_key:
-            print("Please provide forex_api_key!")
-            return
-        if not exchangerate_api_key:
-            print("Please provide exchangerate_api_key!")
-            return
+        if not forex_api_key or forex_api_key == "None":
+            raise ValueError("Please provide forex_api_key!")
+        if not exchangerate_api_key or forex_api_key == "None":
+            raise ValueError("Please provide exchangerate_api_key!")
 
     # fetch wallet_data from bitpanda API
     wallet_data = __get_data(sub_url="asset-wallets", bitpanda_api_key=bitpanda_api_key)
@@ -417,7 +414,7 @@ def get_asset_wallets(enable_conversion=False, bitpanda_api_key=None, forex_api_
     return wallets
 
 
-def get_fiat_wallets(bitpanda_api_key=None):
+def get_fiat_wallets(bitpanda_api_key=None, skip_empty_wallets=False):
     """Get fiat wallet information"""
     if not bitpanda_api_key:
         return
@@ -440,12 +437,12 @@ def get_fiat_wallets(bitpanda_api_key=None):
     for fiat_wallet in fiat_data:
         tmp = fiat_wallet["attributes"]
 
-        # skip empty wallets
-        if float(tmp["balance"]) == 0:
-            continue
+        if skip_empty_wallets:
+            if float(tmp["balance"]) == 0:
+                continue
 
         # print information
-        tmp_text = f"{tmp['fiat_symbol']:<20} | {tmp['balance']:<20} | {tmp['name']:<20}"
+        tmp_text = f"{tmp['fiat_symbol'].center(20)} | {tmp['balance'].center(20)} | {tmp['name'].center(20)}"
         print(tmp_text)
         return_string += f"{tmp_text}\n"
 
@@ -461,17 +458,17 @@ def get_fiat_transactions(bitpanda_api_key=None):
     transaction_data = __get_data(sub_url="fiatwallets/transactions", bitpanda_api_key=bitpanda_api_key)
 
     # get lookup-table
-    lookup = __resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
+    lookup = resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
 
     # predefine return string
     return_string = ""
 
     # header
-    header_tmp = f"{'Time':<30} | {'Type':<10} | {'Fiat ID':<10} | {'Fiat Amount':<15} | {'Crypto ID':<10} | " \
-                 f"{'Crypto Amount':<15} | {'Price':<15}"
+    header_tmp = f"{'Time'.center(30)} | {'Type'.center(10)} | {'Fiat ID'.center(10)} | {'Fiat Amount'.center(15)} | " \
+                 f"{'Crypto ID'.center(16)} | {'Crypto Amount'.center(20)} | {'Price'.center(20)}"
     print(header_tmp)
     return_string += f"{header_tmp}\n"
-    header_sep_tmp = f" {len(transaction_data)} fiat transactions ".center(123, "*")
+    header_sep_tmp = f" {len(transaction_data)} fiat transactions ".center(139, "*")
     print(header_sep_tmp)
     return_string += f"{header_sep_tmp}\n"
 
@@ -487,13 +484,16 @@ def get_fiat_transactions(bitpanda_api_key=None):
         if tmp["type"] == "buy":
             trade = tmp["trade"]["attributes"]
             if int(trade["cryptocoin_id"]) in lookup.keys():
-                trade["cryptocoin_id"] = f"{trade['cryptocoin_id']:<2} | {lookup[int(trade['cryptocoin_id'])]}"
-            tmp_str = f"{tmp_time:<30} | {tmp['type']:<10} | {trade['fiat_id']:<10} | {trade['amount_fiat']:<15} | " \
-                      f"{trade['cryptocoin_id']:<10} | {trade['amount_cryptocoin']:<15} | {trade['price']:<15}"
+                trade["cryptocoin_id"] = f"{trade['cryptocoin_id'].center(5)} | " \
+                                         f"{lookup[int(trade['cryptocoin_id'])].center(6)}"
+            tmp_str = f"{tmp_time.center(30)} | {tmp['type'].center(10)} | {trade['fiat_id'].center(10)} | " \
+                      f"{trade['amount_fiat'].center(15)} | {trade['cryptocoin_id'].center(16)} | " \
+                      f"{trade['amount_cryptocoin'].center(20)} | {trade['price'].center(20)}"
             print(tmp_str)
             return_string += f"{tmp_str}\n"
         elif tmp["type"] == "deposit":
-            tmp_str = f"{tmp_time:<30} | {tmp['type']:<10} | {tmp['fiat_id']:<10} | {tmp['amount']:<15}"
+            tmp_str = f"{tmp_time.center(30)} | {tmp['type'].center(10)} | " \
+                      f"{tmp['fiat_id'].center(10)} | {tmp['amount'].center(15)} {'-'*64}"
             print(tmp_str)
             return_string += f"{tmp_str}\n"
         else:

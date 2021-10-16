@@ -1,19 +1,37 @@
 """
-Tkinter GUI to display data from Bitpanda account
-- Requires valid API keys for Bitpanda, Forex Crypto Stock and ExchangeRate-API
+Tkinter Crypto GUI to get account balances, transaction history and more from various crypto platforms
+Currently supports: Bitpanda, Binance Smart Chain
+
+Notes
+-----
+Requires valid API keys for:
+    - Bitpanda
+    - Forex Crypto Stock Exchange
+    - ExchangeRate-API (https://www.exchangerate-api.com/)
+    - Binance Smart Chain Scan (https://www.bscscan.com)
 """
 
 
 from tkinter import Tk, Toplevel, SOLID, Menu, Label, Button, Checkbutton, BooleanVar, StringVar, LabelFrame
 from tkinter import simpledialog, messagebox
+from tkinter.ttk import Notebook, Frame
 from functools import partial
 from configparser import ConfigParser
 import os
 from crypto_api import get_trades, get_asset_wallets, get_fiat_wallets, get_fiat_transactions, write_to_temporary_file
+from crypto_api import resolve_bitpanda_crypto_ids
 
 
 class ToolTip(object):
-    """Tooltip class. Call with create_tooltip(widget, text)."""
+    """Create tooltips for tkinter widgets.
+
+    Notes
+    -----
+    Call with function::
+
+        create_tooltip(widget, text)
+
+    """
 
     def __init__(self, widget):
         self.widget = widget
@@ -34,7 +52,7 @@ class ToolTip(object):
         tw.wm_geometry("+%d+%d" % (x, y))
         label = Label(tw, text=self.text, anchor="w",
                       background="#ffffe0", relief=SOLID, borderwidth=1,
-                      font=("tahoma", "8", "normal"))
+                      font=("consolas", "8", "normal"))
         label.pack(ipadx=5, ipady=5, fill="both")
 
     def hidetip(self):
@@ -46,8 +64,21 @@ class ToolTip(object):
 
 def create_tooltip(widget, text):
     """
-    Create tooltip for any widget.
-    Example: create_tooltip(some_widget, text="Test Message")
+    Supplementary function for Tooltip class. Creates tooltip for any widget.
+
+    Parameters
+    ----------
+    widget : object
+        TKinter widget to append tooltip to
+    text : string
+        Tooltip text
+
+    Examples
+    --------
+    ::
+
+        my_widget = Button(text="Click me")
+        create_tooltip(my_widget, text="That is a great button")
     """
     tool_tip = ToolTip(widget)
 
@@ -85,11 +116,32 @@ class UI(Tk):
         self.refresh_tooltips()
 
     def build_ui(self):
+        """Build root UI including Notebook and tabs, calls functions to build widgets for tabs"""
 
-        Label(text="Bitpanda UI", font=("Arial", 18)).pack()
+        # create tab control + tabs
+        tab_control = Notebook()
+        tab_bitpanda = Frame(tab_control)
+        tab_binance = Frame(tab_control)
+        tab_control.add(tab_bitpanda, text='Bitpanda')
+        tab_control.add(tab_binance, text='Binance')
+        tab_control.pack(expand=1, fill="both")
+        
+        # call functions to build tab-contents
+        self.build_bitpanda_tab(tab_root=tab_bitpanda)
+        self.build_binance_tab(tab_root=tab_binance)
+
+    def build_bitpanda_tab(self, tab_root=None):
+        """Build the widgets of the Bitpanda tab
+
+        Parameters
+        ----------
+        tab_root : Frame
+            Frame created in build_ui(), part of a Notebook
+        """
+        Label(master=tab_root, text="Bitpanda UI", font=("Arial", 18)).pack()
 
         # INFO
-        self.wdgs["status_frame"] = LabelFrame(self, text="API key status")
+        self.wdgs["status_frame"] = LabelFrame(master=tab_root, text="API key status")
 
         self.wdgs["bitpanda_api_key"] = StringVar(value=self.cfg.get("bitpanda", "api_key"))
         self.wdgs["bitpanda_api_key_displayvar"] = StringVar(value="Not set")
@@ -117,7 +169,7 @@ class UI(Tk):
         # Separator(self, orient="horizontal").pack(fill="x", pady=5)
 
         # GET ASSETS FRAME
-        self.wdgs["get_assets_frame"] = LabelFrame(self, text="Bitpanda Assets")
+        self.wdgs["get_assets_frame"] = LabelFrame(master=tab_root, text="Bitpanda Assets")
 
         self.wdgs["convert_assets_var"] = BooleanVar(value=False)
         self.wdgs["convert_assets_enable"] = Checkbutton(self.wdgs["get_assets_frame"], text="Convert",
@@ -157,7 +209,7 @@ class UI(Tk):
         self.wdgs["get_assets_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
 
         # GET TRADES
-        self.wdgs["get_trades_frame"] = LabelFrame(self, text="Bitpanda Trades")
+        self.wdgs["get_trades_frame"] = LabelFrame(master=tab_root, text="Bitpanda Trades")
         self.wdgs["get_trades_export_var"] = BooleanVar(value=False)
         self.wdgs["get_trades_export"] = Checkbutton(self.wdgs["get_trades_frame"], text="Export",
                                                      variable=self.wdgs["get_trades_export_var"])
@@ -181,7 +233,7 @@ class UI(Tk):
         self.wdgs["get_trades_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
 
         # GET FIAT INFO
-        self.wdgs["get_fiat_frame"] = LabelFrame(self, text="Bitpanda Fiat Data")
+        self.wdgs["get_fiat_frame"] = LabelFrame(master=tab_root, text="Bitpanda Fiat Data")
         self.wdgs["get_fiat_export_var"] = BooleanVar(value=False)
         self.wdgs["get_fiat_export"] = Checkbutton(self.wdgs["get_fiat_frame"], text="Export",
                                                    variable=self.wdgs["get_fiat_export_var"])
@@ -204,6 +256,16 @@ class UI(Tk):
         self.wdgs["get_fiat_transactions"].grid(row=2, column=1)
 
         self.wdgs["get_fiat_frame"].pack(padx=5, pady=5, ipadx=2, ipady=2)
+
+    def build_binance_tab(self, tab_root=None):
+        """Build the widgets of the Binance tab
+
+        Parameters
+        ----------
+        tab_root : Frame
+            Frame created in build_ui(), part of a Notebook
+        """
+        Label(master=tab_root, text="Binance UI", font=("Arial", 18)).pack()
 
     def build_menu(self):
         """Build the menu bar on top"""
@@ -244,14 +306,34 @@ class UI(Tk):
         self.config(menu=menubar)
 
     def open_config(self):
-        """Try to open file."""
+        """Opens the config.ini file"""
         try:
             os.startfile("config.ini")
         except Exception as e:
             print(e)
 
     def write_cfg(self, section=None, option=None, value=None):
-        """Overwrite odoo_config.ini."""
+        """Overwrites  the config.ini file
+
+        Parameters
+        ----------
+        section : string
+            Section in config
+        option : string
+            Option in config
+        value : any or None
+            Value to write to config, will be converted to string; Creates prompt if no value is given
+
+        Examples
+        --------
+        ::
+
+            # Write a hard-coded value
+            self.write_cfg(section="general", option="main_currency", value="EUR")
+
+            # prompt for a value
+            self.write_cfg(section="bitpanda", option="api_key")
+        """
         if section is None or option is None:
             print("Give me a section and option")
             return
@@ -285,27 +367,42 @@ class UI(Tk):
 
     def refresh_tooltips(self):
         """Refresh tooltips to update stringvars after a config-change. Additionally changes label texts and colors"""
+
+        # iterate over available widgets
         for wdg_id, wdg in self.wdgs.items():
+
+            # go further if widget is StringVar
             if isinstance(wdg, StringVar):
-                try:
+
+                # skip widgets ending with _displayvar to make following block of code work
+                if wdg_id.endswith("_displayvar"):
+                    continue
+
+                # skip widgets who do not resemble api key status
+                if wdg_id.endswith("api_key"):
+
+                    # if value is not "None", set label to "Set", highlight green and put related value as tooltip
                     if wdg.get() != "None":
                         self.wdgs[f"{wdg_id}_displayvar"].set(f"Set")
                         self.wdgs[f"{wdg_id}_label"].config(fg="green")
                         create_tooltip(self.wdgs[f"{wdg_id}_label"], wdg.get())
+
+                    # if it is "None", set to "Not set", colorcode and create tooltip explaining how to set API key
                     else:
                         self.wdgs[f"{wdg_id}_displayvar"].set(f"Not set")
                         self.wdgs[f"{wdg_id}_label"].config(fg="red")
                         create_tooltip(self.wdgs[f"{wdg_id}_label"], f"Set via Credentials > "
                                                                      f"{wdg_id.split('_')[0].title()} > "
                                                                      f"Change API key")
-                except Exception as e:
-                    print(e)
 
         self.update_idletasks()
 
     def get_assets(self):
         """Get assets from bitpanda wallets. Requires valid Bitpanda API key
-        - Requires additional forex crypto & exchangerate API keys if enable_conversion is True
+
+        Notes
+        -----
+        Requires additional forex crypto & exchangerate API keys if enable_conversion is True (Convert checkbox in GUI)
         """
         enable_conversion = self.wdgs["convert_assets_var"].get()
         debug_text = not self.wdgs["convert_assets_debug_var"].get()
@@ -322,10 +419,17 @@ class UI(Tk):
             if tmp == "no":
                 enable_conversion = False
 
-        wallet_data = get_asset_wallets(enable_conversion=enable_conversion, bitpanda_api_key=bitpanda_api_key,
-                                        forex_api_key=forex_api_key, exchangerate_api_key=exchangerate_api_key,
-                                        conversion_currency=conversion_currency, conversion_silent=debug_text,
-                                        conversion_alt_currencies=conversion_alt_currencies)
+        # try to fetch wallet data
+        try:
+            wallet_data = get_asset_wallets(enable_conversion=enable_conversion, bitpanda_api_key=bitpanda_api_key,
+                                            forex_api_key=forex_api_key, exchangerate_api_key=exchangerate_api_key,
+                                            conversion_currency=conversion_currency, conversion_silent=debug_text,
+                                            conversion_alt_currencies=conversion_alt_currencies)
+        except ValueError as e:
+            self.wdgs["current_balance_var"].set("API key error!")
+            create_tooltip(self.wdgs["current_balance"], e)
+            self.wdgs["current_balance"].config(fg="red")
+            return
 
         if not wallet_data:
             return
@@ -335,16 +439,20 @@ class UI(Tk):
             write_to_temporary_file(wallet_data)
 
         # set StringVar to sum of converted values
-        converted_crypto_sum = wallet_data["summary_cryptocoin"][f"Sum {conversion_currency}"]
-        self.wdgs["current_balance_var"].set(str(round(converted_crypto_sum, 2)))
+        if "summary_cryptocoin" in wallet_data:
+            converted_crypto_sum = wallet_data["summary_cryptocoin"][f"Sum {conversion_currency}"]
+            self.wdgs["current_balance_var"].set(str(round(converted_crypto_sum, 2)))
+        else:
+            self.wdgs["current_balance_var"].set("Not converted")
 
         # create tooltip from return_string
-        wallet_data["return_string"] += f"\n!!!! Not converted coins: " \
-                                        f"{wallet_data['exchange_rates']['Not converted coins']} !!!!"
+        if "exchange_rates" in wallet_data:
+            wallet_data["return_string"] += f"\n!!!! Not converted coins: " \
+                                            f"{wallet_data['exchange_rates']['Not converted coins']} !!!!"
         create_tooltip(self.wdgs["current_balance"], wallet_data["return_string"])
 
     def get_trades(self):
-        """Get crypto trades from bitpanda API"""
+        """Get crypto trade history from bitpanda wallet. Requires valid Bitpanda API key"""
         # TODO: tooltip auf self.wdgs["get_trades_result"] zahl auf self.wdgs["get_trades_var"]
         bitpanda_api_key = self.cfg.get("bitpanda", "api_key")
         export_as_json = self.wdgs["get_trades_export_var"].get()
@@ -355,8 +463,25 @@ class UI(Tk):
         if not trade_data:
             return
 
+        # set values to StringVars
         self.wdgs["get_trades_amount_var"].set(len(trade_data["balance_data"]))
         self.wdgs["get_trades_invested_var"].set(trade_data["total_invested"])
+
+        # resolve crypto IDs to names
+        crypto_resolver = resolve_bitpanda_crypto_ids(bitpanda_api_key=bitpanda_api_key)
+
+        # create tooltip
+        tmp_tooltip = f"{'type'.center(8)} | {'coin'.center(8)} | {'amount_fiat'.center(15)} | " \
+                      f"{'amount_crypto'.center(20)} | {'time'.center(35)}"
+        tmp_tooltip += "\n" + "-"*len(tmp_tooltip)
+        for row in trade_data["balance_data"]:
+            tmp_tooltip += "\n" + f'{row["attributes"]["type"].center(8)} | ' \
+                                  f'{crypto_resolver[int(row["attributes"]["cryptocoin_id"])].center(8)} | ' \
+                                  f'{row["attributes"]["amount_fiat"].center(15)} | ' \
+                                  f'{str(round(float(row["attributes"]["amount_cryptocoin"]), 2)).center(20)} | ' \
+                                  f'{row["attributes"]["time"]["date_iso8601"].center(35)}'
+        create_tooltip(self.wdgs["get_trades_amount"], tmp_tooltip)
+
 
         # write to temporary file
         if export_as_json:
@@ -381,7 +506,10 @@ class UI(Tk):
             if float(wallet["attributes"]["balance"]) != 0:
                 wallet_info.append(f"{wallet['attributes']['balance']} {wallet['attributes']['fiat_symbol']}")
 
-        wallet_info = ", ".join(wallet_info)
+        if wallet_info:
+            wallet_info = ", ".join(wallet_info)
+        else:
+            wallet_info = "0"
 
         self.wdgs["get_fiat_balance_var"].set(wallet_info)
         self.wdgs["get_fiat_transactions_var"].set(len(fiat_transaction_data['transaction_data']))
