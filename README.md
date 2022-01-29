@@ -10,8 +10,9 @@ This repository is a collection of Python User Interfaces including templates to
 
 ### Table of Contents  
 - [TKinter Template](#tkinter-template)
-- [TKinter Bitpanda UI](#tkinter-bitpanda-ui)
-- [TKinter DND UI](#tkinter-dnd-ui)
+- [TKinter Bitpanda](#tkinter-bitpanda)
+- [TKinter DND](#tkinter-dnd)
+- [TKinter DatabaseAdmin](#tkinter-databaseadmin)
 - [Kivy Template](#kivy-template)
 
 # Tkinter Template
@@ -25,7 +26,7 @@ Tkinter Template for Desktop Applications; Includes customized classes for scrol
 
 ![image](https://user-images.githubusercontent.com/75040444/132994677-9fb3b5f0-9f16-4bbc-a24a-9a9fab63c93f.png)
 
-# Tkinter Bitpanda UI
+# Tkinter Bitpanda
 Lightweight Bitpanda UI to fetch assets (crypto, ETF, index, metal), trades, fiat wallets and transactions via Bitpanda API
 - Requires a valid [Bitpanda API Key](https://web.bitpanda.com/apikey)
 - For conversion to fiat currencies (e.g. EUR), valid [Forex Crypto Stock API key](https://fcsapi.com/document/crypto-api) as well as a [ExchangeRate API Key](https://app.exchangerate-api.com/sign-up) is required
@@ -42,10 +43,18 @@ Lightweight Bitpanda UI to fetch assets (crypto, ETF, index, metal), trades, fia
 ![image](https://user-images.githubusercontent.com/75040444/134688788-5354dc49-a4a3-4575-a3cc-5aa36708f497.png)
 ![image](https://user-images.githubusercontent.com/75040444/134555724-a53edbb8-db9a-42ad-9bb3-4b122dc74d2b.png)
 
-# Tkinter DND UI
+# Tkinter DND
 WIP of tkinter drag-and-drop application, e.g. for building an interactive dungeons and dragons map. [Picture source](https://angelamaps.com/2021/09/28/island/)
 
 ![image](https://user-images.githubusercontent.com/75040444/151664821-d266a881-6496-48da-8dc5-bc6388121c93.png)
+
+# Tkinter DatabaseAdmin
+Tool i developed to help me manage my PostgreSQL database on a RaspberryPi, mainly for selecting and updating and deleting rows in an already created table. Functions to create a new table and MongoDB functionalities are WIP.
+![image](https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png)
+![image](https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png)
+![image](https://user-images.githubusercontent.com/75040444/151667023-c72f4a43-9ea6-4590-aee1-5560296eec4b.png)
+![image](https://user-images.githubusercontent.com/75040444/151667072-599a39ca-7b86-46b9-ae50-b66836d1ae17.png)
+
 
 
 # Kivy Template
