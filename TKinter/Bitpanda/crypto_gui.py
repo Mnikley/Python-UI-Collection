@@ -20,6 +20,7 @@ from configparser import ConfigParser
 import os
 from crypto_api import get_trades, get_asset_wallets, get_fiat_wallets, get_fiat_transactions, write_to_temporary_file
 from crypto_api import resolve_bitpanda_crypto_ids
+import webbrowser
 
 
 class ToolTip(object):
@@ -99,6 +100,7 @@ class UI(Tk):
     """Main UI Class"""
 
     def __init__(self):
+        """Init function of UI class"""
         Tk.__init__(self)
 
         # read config
@@ -268,7 +270,7 @@ class UI(Tk):
         Label(master=tab_root, text="Binance UI", font=("Arial", 18)).pack()
 
     def build_menu(self):
-        """Build the menu bar on top"""
+        """Builds the menu bar on top"""
         menubar = Menu(self)
 
         settings_menu = Menu(menubar, tearoff=0)
@@ -282,24 +284,40 @@ class UI(Tk):
         settings_menu.add_command(label="Exit", command=self.quit)
         menubar.add_cascade(label="Configuration", menu=settings_menu)
 
+        # credentials menu
         credentials_menu = Menu(menubar, tearoff=0)
+
+        # bitpanda options
         credentials_menu_bitpanda = Menu(credentials_menu, tearoff=0)
         credentials_menu_bitpanda.add_command(label="Change base URL",
                                               command=partial(self.write_cfg, "bitpanda", "url"))
         credentials_menu_bitpanda.add_command(label="Change API key",
                                               command=partial(self.write_cfg, "bitpanda", "api_key"))
+        credentials_menu_bitpanda.add_command(label="Get API key",
+                                              command=partial(webbrowser.open_new, r"https://web.bitpanda.com/apikey"))
         credentials_menu.add_cascade(label="Bitpanda", menu=credentials_menu_bitpanda)
+
+        # forex cryptostock options
         credentials_menu_forexcryptostock = Menu(credentials_menu, tearoff=0)
         credentials_menu_forexcryptostock.add_command(label="Change base URL",
                                                       command=partial(self.write_cfg, "forexcryptostock", "url"))
         credentials_menu_forexcryptostock.add_command(label="Change API key",
                                                       command=partial(self.write_cfg, "forexcryptostock", "api_key"))
+        credentials_menu_forexcryptostock.add_command(label="Get API key",
+                                                      command=partial(webbrowser.open_new,
+                                                                      r"https://fcsapi.com/document/crypto-api"))
+
         credentials_menu.add_cascade(label="Forex Crypto Stock", menu=credentials_menu_forexcryptostock)
+
+        # ExchangeRate API options
         credentials_menu_exchangerate = Menu(credentials_menu, tearoff=0)
         credentials_menu_exchangerate.add_command(label="Change base URL",
                                                   command=partial(self.write_cfg, "exchangerate", "url"))
         credentials_menu_exchangerate.add_command(label="Change API key",
                                                   command=partial(self.write_cfg, "exchangerate", "api_key"))
+        credentials_menu_exchangerate.add_command(label="Get API key",
+                                                  command=partial(webbrowser.open_new,
+                                                                  r"https://app.exchangerate-api.com/sign-up"))
         credentials_menu.add_cascade(label="ExchangeRate", menu=credentials_menu_exchangerate)
         menubar.add_cascade(label="Credentials", menu=credentials_menu)
 
@@ -385,7 +403,7 @@ class UI(Tk):
                     if wdg.get() != "None":
                         self.wdgs[f"{wdg_id}_displayvar"].set(f"Set")
                         self.wdgs[f"{wdg_id}_label"].config(fg="green")
-                        create_tooltip(self.wdgs[f"{wdg_id}_label"], wdg.get())
+                        create_tooltip(self.wdgs[f"{wdg_id}_label"], f"Set to: {wdg.get()}")
 
                     # if it is "None", set to "Not set", colorcode and create tooltip explaining how to set API key
                     else:
@@ -393,7 +411,9 @@ class UI(Tk):
                         self.wdgs[f"{wdg_id}_label"].config(fg="red")
                         create_tooltip(self.wdgs[f"{wdg_id}_label"], f"Set via Credentials > "
                                                                      f"{wdg_id.split('_')[0].title()} > "
-                                                                     f"Change API key")
+                                                                     f"Change API key\n"
+                                                                     f"Get a new API key via Credentials > "
+                                                                     f"{wdg_id.split('_')[0].title()} > Get API key")
 
         self.update_idletasks()
 
@@ -482,7 +502,6 @@ class UI(Tk):
                                   f'{row["attributes"]["time"]["date_iso8601"].center(35)}'
         create_tooltip(self.wdgs["get_trades_amount"], tmp_tooltip)
 
-
         # write to temporary file
         if export_as_json:
             write_to_temporary_file(trade_data["balance_data"])
@@ -519,7 +538,9 @@ class UI(Tk):
 
 
 if __name__ == '__main__':
-    # create default config.ini on first start
+    """Boilerplate code - creates default config.ini on first start"""
+
+    # check if config.ini exists, if not, write default hardcoded config.ini
     if not os.path.isfile("config.ini"):
         print("No config.ini detected. Loading default configuration ..")
         default_ini = f"""[general]
@@ -542,13 +563,17 @@ api_key = None
 docs = https://app.exchangerate-api.com/sign-up
 """
 
+        # write to file
         with open("config.ini", "w") as cfg:
             cfg.write(default_ini)
 
+    # call UI class
     app = UI()
-    app.title(f"Bitpanda UI")
+
+    # set window title
+    app.title(f"leysolutions.com | Crypto UI")
     # app.overrideredirect(1)  # remove top badge
-    # app.attributes("-toolwindow", True)
+    app.attributes("-toolwindow", True)
     # app.geometry("300x300")
     # style = ThemedStyle(app)
     # style.set_theme("plastik")
