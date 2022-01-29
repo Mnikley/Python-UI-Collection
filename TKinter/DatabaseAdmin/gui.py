@@ -462,6 +462,7 @@ class PostgreSQLTab(ttk.Frame):
         ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
         self.build_psql_tab()
+        self.disable_ui()
 
     """ ########################################### BUILD UI ########################################### """
 
@@ -528,6 +529,22 @@ class PostgreSQLTab(ttk.Frame):
                                               command=self.delete_from_table)
         psql["btns"]["table_delete"].pack(side="left", padx=2)
 
+    def disable_ui(self):
+        """Disables all 1st level frame-children except Connect button"""
+        for child in self.winfo_children():
+            if child.widgetName == "ttk::frame":
+                for c in child.winfo_children():
+                    if c.widgetName in ["ttk::button", "ttk::combobox"] and c.cget("text") != "Connect":
+                        c.configure(state="disabled")
+
+    def enable_ui(self):
+        """Enables all 1st level frame-children"""
+        for child in self.winfo_children():
+            if child.widgetName == "ttk::frame":
+                for c in child.winfo_children():
+                    if c.widgetName in ["ttk::button", "ttk::combobox"]:
+                        c.configure(state="normal")
+
     """ ########################################### PSQL Functions ########################################### """
 
     def query_all(self, qry=None, debug=False):
@@ -561,6 +578,7 @@ class PostgreSQLTab(ttk.Frame):
         if psql["btns"]["init"]["text"] == "Disconnect":
             psql["connection"].close()
             psql["btns"]["init"].config(text="Connect")
+            self.disable_ui()
             return
 
         cfg = read_config(section="postgresql")
@@ -577,6 +595,7 @@ class PostgreSQLTab(ttk.Frame):
 
             print(f"Available DBs: {[f[0] for f in dbs]}")
             psql["btns"]["init"].config(text="Disconnect")
+            self.enable_ui()
 
         except Exception as e:
             print(e)
@@ -591,6 +610,7 @@ class PostgreSQLTab(ttk.Frame):
             print("CLOSING CONNECTION")
         psql["connection"].close()
         psql["btns"]["init"].config(text="Connect")
+        self.disable_ui()
 
     def change_db(self, event):
         """Change current database (open new connection)"""
@@ -601,6 +621,7 @@ class PostgreSQLTab(ttk.Frame):
         psql["connection"] = psycopg2.connect(dbname=db_name, user=cfg["user"], password=cfg["pass"],
                                               host=cfg["server"], port=cfg["port"], sslmode=cfg["sslmode"])
         psql["btns"]["init"].config(text="Disconnect")
+        self.enable_ui()
         # print("FETCHING TABLES")
         self.get_all_tables(populate_combobox=True)
 
