@@ -50,6 +50,7 @@ WIP of tkinter drag-and-drop application, e.g. for building an interactive dunge
 
 # Tkinter DatabaseAdmin
 Tool i developed to help me manage my PostgreSQL database on a RaspberryPi, mainly for selecting and updating and deleting rows in an already created table. Functions to create a new table and MongoDB functionalities are WIP.
+
 ![image](https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png)
 ![image](https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png)
 ![image](https://user-images.githubusercontent.com/75040444/151667023-c72f4a43-9ea6-4590-aee1-5560296eec4b.png)
