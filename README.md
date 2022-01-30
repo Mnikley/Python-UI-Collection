@@ -13,7 +13,6 @@ This repository is a collection of Python User Interfaces including templates to
 - [TKinter DatabaseAdmin](#tkinter-databaseadmin)
 - [TKinter Snippets](#tkinter-snippets)
 - [Kivy Template](#kivy-template)
-- [Kivy Tooltips](#kivy-tooltips)
 - [Kivy Snippets](#kivy-snippets)
 
 # Tkinter Template
