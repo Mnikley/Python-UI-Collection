@@ -290,9 +290,10 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
     exchange_rates["Not converted coins"] = bitpanda_coins
 
     # undo corrections
-    exchange_rates[f"BEST/{currency}"] = exchange_rates.pop(f"BESTb/{currency}")
-    exchange_rates[f"BTT/{currency}"] = exchange_rates.pop(f"BTTN/{currency}")
-    exchange_rates[f"OCEAN/{currency}"] = exchange_rates.pop(f"OCEANp/{currency}")
+    for _coin in ["BESTb", "BTTN", "OCEANp"]:
+        if _coin in exchange_rates.keys():
+            # strip last char from key by removing old key/value pair and adding new one
+            exchange_rates[f"{_coin[:-1]}/{currency}"] = exchange_rates.pop(f"{_coin}/{currency}")
 
     return exchange_rates
 

@@ -495,11 +495,16 @@ class UI(Tk):
                       f"{'amount_crypto'.center(20)} | {'time'.center(35)}"
         tmp_tooltip += "\n" + "-"*len(tmp_tooltip)
         for row in trade_data["balance_data"]:
-            tmp_tooltip += "\n" + f'{row["attributes"]["type"].center(8)} | ' \
-                                  f'{crypto_resolver[int(row["attributes"]["cryptocoin_id"])].center(8)} | ' \
-                                  f'{row["attributes"]["amount_fiat"].center(15)} | ' \
-                                  f'{str(round(float(row["attributes"]["amount_cryptocoin"]), 2)).center(20)} | ' \
-                                  f'{row["attributes"]["time"]["date_iso8601"].center(35)}'
+            try:
+                tmp_tooltip += "\n" + f'{row["attributes"]["type"].center(8)} | ' \
+                                      f'{crypto_resolver[int(row["attributes"]["cryptocoin_id"])].center(8)} | ' \
+                                      f'{row["attributes"]["amount_fiat"].center(15)} | ' \
+                                      f'{str(round(float(row["attributes"]["amount_cryptocoin"]), 2)).center(20)} | ' \
+                                      f'{row["attributes"]["time"]["date_iso8601"].center(35)}'
+            except Exception as e:
+                print(e)
+                print(row["attributes"]["cryptocoin_id"])
+                print(crypto_resolver.keys())
         create_tooltip(self.wdgs["get_trades_amount"], tmp_tooltip)
 
         # write to temporary file
@@ -573,7 +578,7 @@ docs = https://app.exchangerate-api.com/sign-up
     # set window title
     app.title(f"leysolutions.com | Crypto UI")
     # app.overrideredirect(1)  # remove top badge
-    app.attributes("-toolwindow", True)
+    # app.attributes("-toolwindow", True)
     # app.geometry("300x300")
     # style = ThemedStyle(app)
     # style.set_theme("plastik")
