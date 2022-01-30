@@ -36,9 +36,9 @@ picture_frame = Frame(root)
 picture_frame.pack(side="left", anchor="w", fill="both", expand=True)
 
 # load the image
-if resize_img:
+if resize_img == False:
     img = ImageTk.PhotoImage(Image.open(image_file_path).resize(resize_to, Image.ANTIALIAS))
-else:
+if resize_img == True:
     img = ImageTk.PhotoImage(Image.open(image_file_path))
 
 # create canvas, set canvas background to the image

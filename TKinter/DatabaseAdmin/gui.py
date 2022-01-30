@@ -942,6 +942,7 @@ class MongoDBTab(ttk.Frame):
         print("Initializing MongoDB Connection ..")
         cfg = read_config(section="mongodb")
         client = MongoClient(f"{cfg['user']}:{cfg['pass']}@{cfg['server']}:{cfg['port']}")
+        print(f"Created client connection: {client}")
         # mongodb + srv: // readonly: readonly @ [demodata.rgl39.mongodb.net / demo?retryWrites = true & w = majority](
         #     http: // demodata.rgl39.mongodb.net / demo?retryWrites=true & w=majority)
 
