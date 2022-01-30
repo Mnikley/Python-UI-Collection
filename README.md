@@ -66,8 +66,8 @@ Tool i developed to help me manage my PostgreSQL database on a RaspberryPi, main
 4. Run GUI: `python gui.py`
 
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png" alt="database admin app" width="256" height="256">
-  <img src="https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png" alt="database admin update" width="512" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png" alt="database admin app" width="312" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png" alt="database admin update" width="456" height="256">
   <img src="https://user-images.githubusercontent.com/75040444/151667023-c72f4a43-9ea6-4590-aee1-5560296eec4b.png" alt="database admin delete" width="512" height="256">
   <img src="https://user-images.githubusercontent.com/75040444/151667072-599a39ca-7b86-46b9-ae50-b66836d1ae17.png" alt="database admin create" width="256" height="256">
 </div>
