@@ -85,39 +85,9 @@ This template should help to get started on how to create responsive desktop app
 ![image](https://user-images.githubusercontent.com/75040444/137365136-e2081127-b3cd-47a0-a49f-acbd1657343a.png)
 ![image](https://user-images.githubusercontent.com/75040444/137365197-dca534d4-f494-4ce2-a69e-3301c2b570d9.png)
 
-# Kivy Tooltips
-Classes to add hover-behaviour and tooltips for Button, Switch and Slider to kivy applications
-Usage example .kv file:
-```
-<Tooltip>:
-    size_hint: None, None
-    size: self.texture_size[0]+5, self.texture_size[1]+5
-    canvas.before:
-        Color:
-            rgb: 0.2, 0.2, 0.2
-        Rectangle:
-            size: self.size
-            pos: self.pos
-
-<Root>:
-    orientation: 'vertical'
-	TTLabel:
-		text: "Im a label"
-		tooltip: "And im your tooltip"
-	TTLabel:
-		text: "Im just an ordinary label"
-	TTButton:
-		text: "Im a button"
-		on_release: root.test_function()
-		tooltip: "Click it for some action"
-	TTSlider:
-		tooltip: "Current value: " + str(round(self.value, 2))
-	TTSwitch:
-		tooltip: ["Switch is off", "Switch is on"][self.active]
-```
-
 # Kivy Snippets
 Collection of small kivy apps and snippets available at `Kivy/Snippets/`
+- `tooltips/tooltip_test.py` - Standalone tooltip classes and examples to add hover-behaviour to Button, Switch and Slider. Used in template
 - `file_editor/main.py` - Load/edit/save text-based files with filechooser
 - `loop_clock/loop.py` - Simple example of a scheduled thread via Clock
 - `graph_objects.py` - Official example of kivy graph objects
