@@ -412,10 +412,24 @@ class ToolTip(object):
 def read_config(filename="config.ini", section=None):
     """Parse DB config from .ini file"""
     parser = ConfigParser()
+    if not os.path.isfile(filename):
+        print(f"Couldnt find {os.path.abspath(filename)}. Creating default config ..")
+        with open(filename, "w") as f:
+            f.write("""[postgresql]
+server=0.0.0.0
+port=5432
+user=postgresadmin
+pass=123
+sslmode=require
+
+[mongodb]
+server=0.0.0.0
+port=27017
+user=mongoadmin
+pass=123
+""")
+
     ret = parser.read(filename)
-    if not ret:
-        print(f"Couldnt find {os.path.abspath(filename)}")
-        return
 
     content = {}
     if parser.has_section(section):
