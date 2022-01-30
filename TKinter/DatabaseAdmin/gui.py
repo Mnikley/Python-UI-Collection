@@ -7,7 +7,7 @@ Author: Matthias Ley
 """
 
 from tkinter import ttk, simpledialog, messagebox, StringVar, Listbox, Scrollbar, Toplevel
-from tkinter.ttk import Entry, Label, Button, Frame, Style
+from tkinter.ttk import Entry, Label, Button, Frame
 from tkinter.constants import HORIZONTAL
 import tkinter
 from functools import partial
