@@ -1,0 +1,11 @@
+<MyLayout>
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.height, root.width
+
+        Label:
+            id: label_print
+            font_size: 32
+        Button:
+            text: 'Loop'
+            on_press: root.loop()
