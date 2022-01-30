@@ -23,8 +23,9 @@ Tkinter Template for Desktop Applications; Includes customized classes for scrol
 2. Navigate to folder: `cd Tkinter/Template`
 3. Install requirements: `python -m pip install -r requirements.txt`
 4. Run GUI: `python GUI.py`
-
-![image](https://user-images.githubusercontent.com/75040444/132994677-9fb3b5f0-9f16-4bbc-a24a-9a9fab63c93f.png)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/75040444/132994677-9fb3b5f0-9f16-4bbc-a24a-9a9fab63c93f.png" alt="tkinter template" width="512" height="256">
+</div>
 
 # Tkinter Bitpanda
 Lightweight Bitpanda UI to fetch assets (crypto, ETF, index, metal), trades, fiat wallets and transactions via Bitpanda API
@@ -40,8 +41,20 @@ Lightweight Bitpanda UI to fetch assets (crypto, ETF, index, metal), trades, fia
 4. Run GUI: `python crypto_gui.py`
 5. Enter valid API keys after first launch via the menu (will be stored in config.ini)
 
-![image](https://user-images.githubusercontent.com/75040444/134688788-5354dc49-a4a3-4575-a3cc-5aa36708f497.png)
-![image](https://user-images.githubusercontent.com/75040444/134555724-a53edbb8-db9a-42ad-9bb3-4b122dc74d2b.png)
+<div align="center">
+  <table>
+    <tr>
+      <th align="center">
+        <img src="https://user-images.githubusercontent.com/75040444/151707378-426e8f74-4be0-402b-a301-a150a4f8c0bc.png" alt="bitpanda app" width="128" height="256">
+      </th>
+      <th align="center">
+        <img src="https://user-images.githubusercontent.com/75040444/151707374-9d53c7a3-0409-4baf-9211-0be3de3f494d.png" width="256" height="128">
+        <br>
+        <img src="https://user-images.githubusercontent.com/75040444/151707380-2a31bb7b-48ed-4474-86c8-671b174f5335.png" alt="bitpanda app console" width="256" height="128">
+      </th>
+    </tr>
+  </table>
+</div>
 
 # Tkinter DatabaseAdmin
 Tool i developed to help me manage my PostgreSQL database on a RaspberryPi, mainly for selecting and updating and deleting rows in an already created table. Functions to create a new table and MongoDB functionalities are WIP.
@@ -52,10 +65,12 @@ Tool i developed to help me manage my PostgreSQL database on a RaspberryPi, main
 3. Install requirements: `python -m pip install -r requirements.txt`
 4. Run GUI: `python gui.py`
 
-![image](https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png)
-![image](https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png)
-![image](https://user-images.githubusercontent.com/75040444/151667023-c72f4a43-9ea6-4590-aee1-5560296eec4b.png)
-![image](https://user-images.githubusercontent.com/75040444/151667072-599a39ca-7b86-46b9-ae50-b66836d1ae17.png)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/75040444/151666983-49201450-4f77-42cc-b357-8d523e330220.png" alt="database admin app" width="312" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/151666999-fe2b824e-5c96-42a3-a874-b73a26fff357.png" alt="database admin update" width="456" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/151667023-c72f4a43-9ea6-4590-aee1-5560296eec4b.png" alt="database admin delete" width="512" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/151667072-599a39ca-7b86-46b9-ae50-b66836d1ae17.png" alt="database admin create" width="256" height="256">
+</div>
 
 # Tkinter Snippets
 Collection of small tkinter apps and snippets available at `Tkinter/Snippets/`
@@ -80,9 +95,11 @@ This template should help to get started on how to create responsive desktop app
 3. Install requirements: `python -m pip install -r requirements.txt`
 4. Run GUI: `python GUI.py`
 
-![image](https://user-images.githubusercontent.com/75040444/137364780-a6db3d78-a21f-4f28-a796-ead600a5743a.png)
-![image](https://user-images.githubusercontent.com/75040444/137365136-e2081127-b3cd-47a0-a49f-acbd1657343a.png)
-![image](https://user-images.githubusercontent.com/75040444/137365197-dca534d4-f494-4ce2-a69e-3301c2b570d9.png)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/75040444/137364780-a6db3d78-a21f-4f28-a796-ead600a5743a.png" alt="kivy template launch screen" width="512" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/137365136-e2081127-b3cd-47a0-a49f-acbd1657343a.png" alt="kivy template" width="512" height="256">
+  <img src="https://user-images.githubusercontent.com/75040444/137365197-dca534d4-f494-4ce2-a69e-3301c2b570d9.png" alt="kivy template tooltips" width="512" height="256">
+</div>
 
 # Kivy Snippets
 Collection of small kivy apps and snippets available at `Kivy/Snippets/`
