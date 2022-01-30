@@ -132,7 +132,7 @@ dmypy.json
 TKinter/Template/config.ini
 !Tkinter/Template/lib
 TKinter/Bitpanda/config.ini
-TKinter/DatabaseAdmin/config.ini
+# TKinter/DatabaseAdmin/config.ini
 
 # Kivy template stuff
 Kivy/Template/leysolutions.ini
