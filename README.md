@@ -2,7 +2,6 @@
   http://img.shields.io/travis/Mnikley/Python-UI-Collection/master.svg?style=flat)](
  https://travis-ci.org/Mnikley/Python-UI-Collection)
  [![Total alerts](https://img.shields.io/lgtm/alerts/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/alerts/)
- [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/context:javascript)
  [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Mnikley/Python-UI-Collection.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Mnikley/Python-UI-Collection/context:python)
 
 # Python UI Collection
