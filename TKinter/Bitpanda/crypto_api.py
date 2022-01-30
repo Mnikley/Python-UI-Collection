@@ -484,7 +484,7 @@ def get_fiat_transactions(bitpanda_api_key=None):
 
         # print information
         tmp_time = " ".join(tmp["time"]["date_iso8601"].replace("T", " ").split())
-        if tmp["type"] == "buy":
+        if tmp["type"] in ["buy", "sell"]:
             trade = tmp["trade"]["attributes"]
             if int(trade["cryptocoin_id"]) in lookup.keys():
                 trade["cryptocoin_id"] = f"{trade['cryptocoin_id'].center(5)} | " \
@@ -497,6 +497,12 @@ def get_fiat_transactions(bitpanda_api_key=None):
         elif tmp["type"] == "deposit":
             tmp_str = f"{tmp_time.center(30)} | {tmp['type'].center(10)} | " \
                       f"{tmp['fiat_id'].center(10)} | {tmp['amount'].center(15)} {'-'*64}"
+            print(tmp_str)
+            return_string += f"{tmp_str}\n"
+        elif tmp["type"] == "transfer":
+            _tmp_from_to = f" {tmp['in_or_out']} - {tmp['from']} > {tmp['recipient']} "
+            tmp_str = f"{tmp_time.center(30)} | {tmp['type'].center(10)} | {tmp['fiat_id'].center(10)} | " \
+                      f"{tmp['amount'].center(15)} | {_tmp_from_to.center(62, '*')}"
             print(tmp_str)
             return_string += f"{tmp_str}\n"
         else:
