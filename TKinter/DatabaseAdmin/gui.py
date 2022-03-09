@@ -430,6 +430,7 @@ pass=123
 """)
 
     ret = parser.read(filename)
+    print("Parsed:", ret)
 
     content = {}
     if parser.has_section(section):

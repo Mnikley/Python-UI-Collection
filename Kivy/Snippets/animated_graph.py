@@ -1,14 +1,10 @@
 from kivy.app import App
 import numpy as np
-from math import sin, sqrt, exp
-from kivy.uix.widget import Widget
-from kivy.properties import ObjectProperty
-from kivy.garden.graph import Graph, MeshLinePlot, SmoothLinePlot
+from math import sqrt, exp
+from kivy.garden.graph import Graph, SmoothLinePlot
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
 from kivy.animation import Animation
 
 

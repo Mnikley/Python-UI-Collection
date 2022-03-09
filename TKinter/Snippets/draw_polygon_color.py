@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import colorchooser
 from functools import partial
 
 

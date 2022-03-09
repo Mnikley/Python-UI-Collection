@@ -120,6 +120,8 @@ def __get_exchange_rates(fcsapi_key=None, fcsapi_root_url="https://fcsapi.com/ap
         List of strings with alternative currencies to convert crypto values to
     """
 
+    alt_currencies = alt_currencies
+
     # fetch symbols (1 request)
     url = f"{fcsapi_root_url}crypto/list?type=crypto&access_key={fcsapi_key}"
     try:
