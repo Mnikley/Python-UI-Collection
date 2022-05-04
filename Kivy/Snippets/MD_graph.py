@@ -4,7 +4,7 @@ from kivy.properties import ObjectProperty
 from kivymd.app import MDApp
 import matplotlib.pyplot as plt
 
-from kivy.garden.graph import Graph, MeshLinePlot, SmoothLinePlot, LinePlot # in your case use kivy.garden.graph import Graph, MeshLinePlot, SmoothLinePlot, LinePlot
+from kivy.garden.graph import Graph, SmoothLinePlot
 
 KV = '''
 <ContentNavigationDrawer>:
