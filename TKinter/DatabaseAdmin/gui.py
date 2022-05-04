@@ -6,8 +6,8 @@ Updated: 02.10.2021
 Author: Matthias Ley
 """
 
-from tkinter import ttk, simpledialog, messagebox, StringVar, Listbox, Scrollbar, Toplevel
-from tkinter.ttk import Entry, Label, Button, Frame
+from tkinter import ttk, simpledialog, messagebox, StringVar, Listbox, Scrollbar, Toplevel, BooleanVar
+from tkinter.ttk import Entry, Label, Button, Frame, Checkbutton
 from tkinter.constants import HORIZONTAL
 import tkinter
 from functools import partial
@@ -279,6 +279,7 @@ class CreatePSQLTable(simpledialog.Dialog):
         self.lbls_dtypes = {}
         self.ents = {}
         self.btns = {}
+        self.table_name = None
 
         # forward default arguments to init
         simpledialog.Dialog.__init__(self, parent, title)
@@ -294,12 +295,13 @@ class CreatePSQLTable(simpledialog.Dialog):
 
         # get stringvar, append new value to it (first column)
         current_val = self.sql.get()
-        self.sql.set(f"{current_val} {data[0]}")
+        self.sql.set(f"{current_val} {data}")  # obsolete?
 
         current_idx = len(self.lbls)
 
         # label - col #
-        self.lbls[current_idx] = Label(self.frame, text=current_idx).grid(row=current_idx, column=0, padx=2)
+        self.lbls[current_idx] = Label(self.frame, text=current_idx)
+        self.lbls[current_idx].grid(row=current_idx, column=0, padx=2)
         # entry for name
         self.ents[current_idx] = Entry(self.frame)
         self.ents[current_idx].grid(row=current_idx, column=1, padx=2)
@@ -307,23 +309,39 @@ class CreatePSQLTable(simpledialog.Dialog):
         # TODO: callback of some sort
 
         # label - data type
-        self.lbls_dtypes[current_idx] = Label(self.frame, text=data[0]).grid(row=current_idx, column=2, padx=2)
+        self.lbls_dtypes[current_idx] = Label(self.frame, text=data)
+        self.lbls_dtypes[current_idx].grid(row=current_idx, column=2, padx=2)
 
         # button - remove
-        self.btns[current_idx] = Button(self.frame, text="Remove")
+        self.btns[current_idx] = Button(self.frame, text="Remove", command=partial(self.remove_entry, current_idx))
         self.btns[current_idx].grid(row=current_idx, column=3, padx=2)
-        # TODO: callback of some sort
+
+    def remove_entry(self, current_idx):
+        """Remove entry from listbox"""
+        # remove entry from dicts
+        self.lbls[current_idx].destroy()
+        self.lbls_dtypes[current_idx].destroy()
+        self.ents[current_idx].destroy()
+        self.btns[current_idx].destroy()
 
     def body(self, master):
         """Body of popup"""
+        # Table name on top
+        Label(master, text="Table Name:", font=("arial", 9, "bold")).grid(row=0, column=0, padx=2)
+        self.table_name = Entry(master, width=40)
+        self.table_name.grid(row=0, column=1, padx=2)
+
+        # separator
+        ttk.Separator(master, orient=HORIZONTAL).grid(row=1, column=0, columnspan=99, sticky="ew", pady=10)
+
         # headers for listbox
         Label(master, text="Select a datatype to add as a column:", font=("arial", 9, "bold")).\
-            grid(row=0, column=0, columnspan=2, padx=2, pady=2)
-        Label(master, text="type | description").grid(row=1, column=0, columnspan=2, padx=2, pady=2)
+            grid(row=3, column=0, columnspan=2, padx=2, pady=2)
+        Label(master, text="type | description").grid(row=4, column=0, columnspan=2, padx=2, pady=2)
 
         # scrollable listbox inside a frame
         frame = Frame(master)
-        frame.grid(row=2, column=0, columnspan=2, padx=2, pady=2)
+        frame.grid(row=5, column=0, columnspan=2, padx=2, pady=2)
         self.listbox = Listbox(frame, selectmode="single", width=max([len("".join(str(f))) for f in self.data_types]))
         self.listbox.pack(side="left", fill="y")
         scrollbar = Scrollbar(frame, orient="vertical")
@@ -338,19 +356,19 @@ class CreatePSQLTable(simpledialog.Dialog):
         self.listbox.insert(0, *self.data_types)
 
         # separator
-        ttk.Separator(master, orient=HORIZONTAL).grid(row=3, column=0, columnspan=99, sticky="ew", pady=10)
+        ttk.Separator(master, orient=HORIZONTAL).grid(row=6, column=0, columnspan=99, sticky="ew", pady=10)
 
         # frame for widgets created by listbox by selecting data types
         # header for frame
-        Label(master, text="Col # | name | data type").grid(row=4, column=0, columnspan=2, padx=2, pady=2, sticky="W")
+        Label(master, text="Col # | name | data type").grid(row=7, column=0, columnspan=2, padx=2, pady=2, sticky="W")
         self.frame = Frame(master)
-        self.frame.grid(row=5, column=0, columnspan=2, padx=2, pady=2)
+        self.frame.grid(row=8, column=0, columnspan=2, padx=2, pady=2)
 
-        ttk.Separator(master, orient=HORIZONTAL).grid(row=6, column=0, columnspan=99, sticky="ew", pady=10)
+        ttk.Separator(master, orient=HORIZONTAL).grid(row=9, column=0, columnspan=99, sticky="ew", pady=10)
 
         # Entry to hand over values
         self.sql_label = Label(master, textvariable=self.sql)
-        self.sql_label.grid(row=7, column=0, padx=2)
+        self.sql_label.grid(row=10, column=0, padx=2)
 
     def buttonbox(self):
         """override default function to get rid of <Return> binding"""
@@ -367,9 +385,25 @@ class CreatePSQLTable(simpledialog.Dialog):
 
         box.pack()
 
-    def apply(self):
+    def cancel(self, event=None):
+        print("Table creation canceled")
+        self.destroy()
+
+    def ok(self, event=None):
         """Hand over results"""
-        self.result = self.sql
+
+        table_name = self.table_name.get()
+        if table_name == "":
+            messagebox.showerror("Error", "Please enter a table name.")
+            return
+
+        ret_sql = f"CREATE TABLE {table_name} ("
+        ret_sql += ", ".join([f"{self.ents[_c].get()} {self.lbls_dtypes[_d].cget('text')}"
+                              for _c, _d in zip(self.ents, self.lbls_dtypes)])
+        ret_sql += ")"
+
+        self.result = ret_sql
+        self.destroy()
 
 
 class ToolTip(object):
@@ -475,6 +509,7 @@ class PostgreSQLTab(ttk.Frame):
         global psql
         ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
+        self.show_output = BooleanVar(value=False)
         self.build_psql_tab()
         self.disable_ui()
 
@@ -519,6 +554,8 @@ class PostgreSQLTab(ttk.Frame):
         psql["oths"]["select_db"].grid(row=0, column=1, padx=2, pady=2, sticky="W")
         psql["btns"]["select_db"] = Button(psql["frms"]["select_db"], text="Create DB", command=self.create_db)
         psql["btns"]["select_db"].grid(row=0, column=2, padx=2, pady=2, sticky="W")
+        psql["btns"]["drop_db"] = Button(psql["frms"]["select_db"], text="Drop DB", command=self.drop_db)
+        psql["btns"]["drop_db"].grid(row=0, column=3, padx=2, pady=2, sticky="W")
 
         # combobox to select table and button to create a new table
         psql["lbls"]["select_table_title"] = Label(psql["frms"]["select_db"], text="Select Table:")
@@ -529,10 +566,16 @@ class PostgreSQLTab(ttk.Frame):
         psql["oths"]["select_table"].grid(row=1, column=1, padx=2, pady=2, sticky="W")
         psql["btns"]["select_table"] = Button(psql["frms"]["select_db"], text="Create Table", command=self.create_table)
         psql["btns"]["select_table"].grid(row=1, column=2, padx=2, pady=2, sticky="W")
+        psql["btns"]["drop_table"] = Button(psql["frms"]["select_db"], text="Drop Table", command=self.drop_table)
+        psql["btns"]["drop_table"].grid(row=1, column=3, padx=2, pady=2, sticky="W")
 
         # buttons for actions
         psql["frms"]["table_ops"] = Frame(self)
         psql["frms"]["table_ops"].grid(row=23, column=0, padx=5, pady=5, sticky="W", columnspan=3)
+        psql["oths"]["table_content"] = Checkbutton(psql["frms"]["table_ops"], variable=self.show_output,
+                                                    onvalue=True, offvalue=False)
+        create_tooltip(psql["oths"]["table_content"], "Show output in temporary file")
+        psql["oths"]["table_content"].pack(side="left", padx=2)
         psql["btns"]["table_content"] = Button(psql["frms"]["table_ops"], text="Get Content",
                                                command=self.get_table_content)
         psql["btns"]["table_content"].pack(side="left", padx=2)
@@ -548,7 +591,8 @@ class PostgreSQLTab(ttk.Frame):
         for child in self.winfo_children():
             if child.widgetName == "ttk::frame":
                 for c in child.winfo_children():
-                    if c.widgetName in ["ttk::button", "ttk::combobox"] and c.cget("text") != "Connect":
+                    if c.widgetName in ["ttk::button", "ttk::combobox", "ttk::checkbutton"] \
+                            and c.cget("text") != "Connect":
                         c.configure(state="disabled")
 
     def enable_ui(self):
@@ -556,7 +600,7 @@ class PostgreSQLTab(ttk.Frame):
         for child in self.winfo_children():
             if child.widgetName == "ttk::frame":
                 for c in child.winfo_children():
-                    if c.widgetName in ["ttk::button", "ttk::combobox"]:
+                    if c.widgetName in ["ttk::button", "ttk::combobox", "ttk::checkbutton"]:
                         c.configure(state="normal")
 
     """ ########################################### PSQL Functions ########################################### """
@@ -626,11 +670,13 @@ class PostgreSQLTab(ttk.Frame):
         psql["btns"]["init"].config(text="Connect")
         self.disable_ui()
 
-    def change_db(self, event):
+    def change_db(self, event, target_db=None):
         """Change current database (open new connection)"""
         self.close_connection(silent=True)
         cfg = read_config(section="postgresql")
         db_name = psql["oths"]["select_db"].get()
+        if target_db:
+            db_name = target_db
         # print(f"CONNECTING TO DB {db_name}")
         psql["connection"] = psycopg2.connect(dbname=db_name, user=cfg["user"], password=cfg["pass"],
                                               host=cfg["server"], port=cfg["port"], sslmode=cfg["sslmode"])
@@ -662,6 +708,32 @@ class PostgreSQLTab(ttk.Frame):
         self.close_connection(silent=True)
         self.init_connection()
 
+    def drop_db(self):
+        """Drop a database"""
+        db_name = psql["oths"]["select_db"].get()
+        confirm = messagebox.askokcancel(title="Confirm drop DB", message=f"Please confirm drop of database: {db_name}")
+        if not confirm:
+            return
+
+        # switch to default db
+        self.change_db(None, "postgres")
+
+        # revoke future connections, terminate all connections to the database except my own
+        self.execute(f"REVOKE CONNECT ON DATABASE {db_name} FROM PUBLIC;")
+        self.execute(f"SELECT pid, pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{db_name}';")
+
+        # set autocommit stuff
+        auto_commit = psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+        psql["connection"].set_isolation_level(auto_commit)
+
+        # drop desired database
+        sql = f"""DROP DATABASE IF EXISTS {db_name}"""
+        self.execute(sql)
+
+        # reopen connection
+        self.close_connection(silent=True)
+        self.init_connection()
+
     def change_table(self, event):
         """Change table in current database"""
         table = psql["oths"]["select_table"].get()
@@ -669,27 +741,41 @@ class PostgreSQLTab(ttk.Frame):
 
     def create_table(self):
         """Create a new table"""
-        # get available datatypes, reformat (remove first column)
-        data_types = self.get_available_types()
-        data_types = [f[1:] for f in data_types]
+        # get available datatypes, launch popup, hand over datatypes
+        sql = CreatePSQLTable(self, title="Create PSQL Table", data_types=self.get_available_types())
 
-        # launch popup, hand over datatypes
-        sql = CreatePSQLTable(self, title="Create PSQL Table", data_types=data_types)
-        print(sql.result)
+        # prompt to create table with sql.results
+        confirm = messagebox.askokcancel(title="Confirm create table", message=f"Please confirm creation of table: "
+                                                                               f"{sql.result}")
+        if not confirm:
+            return
+
+        # create table
+        self.execute(sql.result)
+
+        # refresh table list
+        self.get_all_tables(populate_combobox=True)
+
+    def drop_table(self):
+        """Drop a table"""
+        table = psql["oths"]["select_table"].get()
+        confirm = messagebox.askokcancel(title="Confirm drop table", message=f"Please confirm drop of table: {table}")
+        if not confirm:
+            return
+
+        sql = f"DROP TABLE IF EXISTS {table}"
+        self.execute(sql)
+
+        # refresh tables
+        self.get_all_tables(populate_combobox=True)
+
 
     def get_available_types(self):
         """Get available types from pg_catalog.pg_types (not sure how this works and i dont see all types i expect)"""
-        sql = """SELECT n.nspname as "Schema",
-                  pg_catalog.format_type(t.oid, NULL) AS "Name",
-                  pg_catalog.obj_description(t.oid, 'pg_type') as "Description"
-                 FROM pg_catalog.pg_type t
-                 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-                  WHERE (t.typrelid = 0 OR (SELECT c.relkind = 'c' FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid))
-                  AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = t.typelem AND el.typarray = t.oid)
-                  AND pg_catalog.pg_type_is_visible(t.oid)
-                 ORDER BY 1, 2;
-                 """
-        return self.query_all(sql)
+        # query to get all available PostgreSQL datatypes
+        sql = "SELECT typname FROM pg_catalog.pg_type"
+        dtypes = self.query_all(sql)
+        return [f[0] for f in dtypes if not f[0].startswith("_")]
 
     def rollback_db(self, silent=False):
         """Rollback DB on invalid query"""
@@ -766,7 +852,8 @@ class PostgreSQLTab(ttk.Frame):
         file_content += tmp_end_line + "\n"
 
         # write to temporary file
-        executor.submit(partial(self.write_temporary_file, file_content, ".txt"))
+        if self.show_output.get():
+            executor.submit(partial(self.write_temporary_file, file_content, ".txt"))
 
     def write_temporary_file(self, data=None, suffix=".txt"):
         """Write to temporary file"""
