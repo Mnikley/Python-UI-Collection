@@ -2,7 +2,7 @@
 Connect to RPi databases (PostgreSQL, MongoDB) and manage them
 
 Created: 17.04.2021
-Updated: 02.10.2021
+Updated: 13.05.2022
 Author: Matthias Ley
 """
 
@@ -20,7 +20,7 @@ from configparser import ConfigParser
 import psycopg2
 from pymongo import MongoClient
 
-gui_version = "1.1"
+gui_version = "1.2"
 
 """ ###################################################################################################################
 ############################### Dictionaries for main classes (PostgreSQLTab, MongoDBTab) ############################# 
@@ -580,10 +580,13 @@ class PostgreSQLTab(ttk.Frame):
         psql["btns"]["table_content"] = Button(psql["frms"]["table_ops"], text="Get Content",
                                                command=self.get_table_content)
         psql["btns"]["table_content"].pack(side="left", padx=2)
-        psql["btns"]["table_update"] = Button(psql["frms"]["table_ops"], text="Update Element",
+        psql["btns"]["table_insert"] = Button(psql["frms"]["table_ops"], text="Insert",
+                                              command=self.insert_table_content)
+        psql["btns"]["table_insert"].pack(side="left", padx=2)
+        psql["btns"]["table_update"] = Button(psql["frms"]["table_ops"], text="Update",
                                               command=self.update_table)
         psql["btns"]["table_update"].pack(side="left", padx=2)
-        psql["btns"]["table_delete"] = Button(psql["frms"]["table_ops"], text="Delete Element(s)",
+        psql["btns"]["table_delete"] = Button(psql["frms"]["table_ops"], text="Delete",
                                               command=self.delete_from_table)
         psql["btns"]["table_delete"].pack(side="left", padx=2)
 
@@ -907,6 +910,48 @@ class PostgreSQLTab(ttk.Frame):
         print(f"Number of rows updated: {cursor.rowcount}")
         psql["connection"].commit()
         cursor.close()
+
+    def insert_table_content(self):
+        """Insert table content"""
+        table = psql["oths"]["select_table"].get()
+
+        # fetch headers from selected table
+        sql = f"""SELECT COLUMN_NAME from information_schema.columns WHERE table_name = '{table}'"""
+        headers = [col[0] for col in self.query_all(sql)]
+
+        # fetch types from selected table
+        sql = f"""SELECT DATA_TYPE from information_schema.columns WHERE table_name = '{table}'"""
+        types = [col[0] for col in self.query_all(sql)]
+
+        # join headers and types to string in format "header [type]"
+        headers_types = [f"{h} [{t}]" for h, t in zip(headers, types)]
+
+        # create simple prompt for entering values
+        prompt = simpledialog.askstring(title=f"Insert {table}", prompt=f"Enter values to insert into {table}\n"
+                                                                        f"Available columns: "
+                                                                        f"{', '.join(headers_types)}")
+        if not prompt:
+            return
+
+        # split prompt into values
+        values = prompt.split(",")
+
+        # check if number of values matches number of headers
+        if len(values) != len(headers):
+            messagebox.showerror(title=f"Insert {table}", message=f"Number of values does not match number of headers")
+            return
+
+        # create query
+        sql = f"""INSERT INTO {table} VALUES ({', '.join(['%s' for _ in range(len(headers))])})"""
+        try:
+            cursor = psql["connection"].cursor()
+            cursor.execute(sql, values)
+            psql["connection"].commit()
+        except Exception as e:
+            messagebox.showerror(title=f"Insert {table}", message=f"{e}")
+            self.rollback_db()
+        finally:
+            cursor.close()
 
     def delete_from_table(self):
         """Delete entire ids from table based on input"""
