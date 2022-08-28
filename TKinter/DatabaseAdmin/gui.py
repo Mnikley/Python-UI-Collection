@@ -20,7 +20,7 @@ from configparser import ConfigParser
 import psycopg2
 from pymongo import MongoClient
 
-gui_version = "1.2"
+gui_version = "1.3"
 
 """ ###################################################################################################################
 ############################### Dictionaries for main classes (PostgreSQLTab, MongoDBTab) ############################# 
@@ -927,9 +927,10 @@ class PostgreSQLTab(ttk.Frame):
         headers_types = [f"{h} [{t}]" for h, t in zip(headers, types)]
 
         # create simple prompt for entering values
-        prompt = simpledialog.askstring(title=f"Insert {table}", prompt=f"Enter values to insert into {table}\n"
-                                                                        f"Available columns: "
-                                                                        f"{', '.join(headers_types)}")
+        prompt_tmp = "\n\t".join(headers_types)
+        prompt = simpledialog.askstring(title=f"Insert {table}",
+                                        prompt=f"Enter values to insert into {table} separated with comma without space"
+                                               " (e.g. [1,some string,30])\n\nAvailable columns:\n\t" + prompt_tmp)
         if not prompt:
             return
 
@@ -943,10 +944,12 @@ class PostgreSQLTab(ttk.Frame):
 
         # create query
         sql = f"""INSERT INTO {table} VALUES ({', '.join(['%s' for _ in range(len(headers))])})"""
+        cursor = None
         try:
             cursor = psql["connection"].cursor()
             cursor.execute(sql, values)
             psql["connection"].commit()
+            print("Command OK: " + sql % tuple(values))
         except Exception as e:
             messagebox.showerror(title=f"Insert {table}", message=f"{e}")
             self.rollback_db()
