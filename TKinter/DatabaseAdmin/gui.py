@@ -903,7 +903,7 @@ class PostgreSQLTab(ttk.Frame):
             return
 
         # update query
-        sql = f"""UPDATE {table} SET {', '.join([f'{f[0]}=%s' for f in mods])} WHERE {prim_key[0]}=%s"""
+        sql = f"""UPDATE "{table}" SET {', '.join([f'"{f[0]}"=(%s)' for f in mods])} WHERE {prim_key[0]}=(%s)"""
         cursor = psql["connection"].cursor()
         # hand over modified column values and prim. key value as (*args)
         cursor.execute(sql, (*[f[1] for f in mods], prim_key[1]))
